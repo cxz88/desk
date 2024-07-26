@@ -1,6 +1,5 @@
+
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.hoverable
@@ -8,10 +7,14 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.Icon
+import androidx.compose.material.Surface
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -22,6 +25,7 @@ import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
@@ -32,21 +36,7 @@ import java.awt.event.WindowEvent
 import java.awt.event.WindowListener
 
 
-@Composable
-@Preview
-fun App() {
-    var text by remember { mutableStateOf("Hello, World!") }
-
-    MaterialTheme {
-        Button(onClick = {
-            text = "Hello, Desktop!"
-        }) {
-            Text(text)
-        }
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class)
 fun main() = application {
     val state = rememberWindowState()
     Window(onCloseRequest = ::exitApplication, undecorated = true, state = state, transparent = true) {
@@ -108,7 +98,7 @@ fun main() = application {
                                     //设置bounds,将点下时记录的组件开始坐标与鼠标拖动的距离相加
                                     val x = Mouse.startX + (Mouse.newX - Mouse.oldX)
                                     val y = Mouse.startY + (Mouse.newY - Mouse.oldY)
-                                    state.position = WindowPosition(Mouse.oldXDP + x.toDp(), Mouse.oldYDP + y.toDp())
+                                    state.position = WindowPosition(Mouse.oldXDP + x.sp.toDp(), Mouse.oldYDP + y.sp.toDp())
 
 
                                 }

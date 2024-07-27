@@ -1,7 +1,8 @@
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
@@ -45,162 +46,165 @@ fun main() = application {
         ) {
             Surface(
                 modifier = Modifier
-                    .fillMaxSize().clip(RoundedCornerShape(10.dp)).background(
-                        Brush.linearGradient(
-                            listOf(
-                                Color(0xff2b2d30),
-                                Color(0xff2b2d30),
-                                Color(0xff354b54),
-                                Color(0xff3c3f41),
-                                Color(0xff3c3f41),
-                                Color(0xff2b2d30),
-                                Color(0xff2b2d30)
-                            )
-                        )
-                    ).border(1.dp, color = Color(0x44abb0b3), RoundedCornerShape(10.dp)),
+                  .fillMaxSize(),
+                shape = RoundedCornerShape(10.dp),
+                elevation = 2.dp,
                 color = Color.Transparent,
-                contentColor = Color.Transparent,
-
-
+                border = BorderStroke(.8.dp, Color(0x44abb0b3))
                 ) {
-                Column {
-                    Box(
-                        modifier = Modifier.background(
-                            Color.Transparent
-                        ).fillMaxWidth().height(35.dp)
-                            .onPointerEvent(
-                                PointerEventType.Press
-                            ) {
-
-                                val event = it.nativeEvent
-                                if (event is MouseEvent) {
-
-                                    //此为得到事件源组件
-                                    val cp = event.source as Component
-                                    Mouse.startX = cp.x
-                                    Mouse.startY = cp.y
-                                    Mouse.oldX = event.xOnScreen
-                                    Mouse.oldY = event.yOnScreen
-                                    val position = state.position
-                                    Mouse.oldXDP = position.x
-                                    Mouse.oldYDP = position.y
-                                }
-                            }.onPointerEvent(PointerEventType.Move) {
-                                val event = it.nativeEvent
-                                if (event is MouseEvent) {
-                                    if (event.button != 1) {
-                                        return@onPointerEvent
-                                    }
-                                    event.source as Component
-                                    //鼠标拖动
-                                    Mouse.newX = event.xOnScreen
-                                    Mouse.newY = event.yOnScreen
-                                    //设置bounds,将点下时记录的组件开始坐标与鼠标拖动的距离相加
-                                    val x = Mouse.startX + (Mouse.newX - Mouse.oldX)
-                                    val y = Mouse.startY + (Mouse.newY - Mouse.oldY)
-                                    state.position = WindowPosition(Mouse.oldXDP + x.sp.toDp(), Mouse.oldYDP + y.sp.toDp())
-
-
-                                }
-
-
-                            }
-                    ) {
-                        val m = remember { MutableInteractionSource() }
-                        var active by remember { mutableStateOf(true) }
-                        val hover by m.collectIsHoveredAsState()
-                        window.addWindowListener(object : WindowListener {
-                            override fun windowOpened(e: WindowEvent?) {
-
-                            }
-
-                            override fun windowClosing(e: WindowEvent?) {
-
-                            }
-
-                            override fun windowClosed(e: WindowEvent?) {
-
-                            }
-
-                            override fun windowIconified(e: WindowEvent?) {
-
-                            }
-
-                            override fun windowDeiconified(e: WindowEvent?) {
-
-                            }
-
-                            override fun windowActivated(e: WindowEvent?) {
-                                active = true
-                            }
-
-                            override fun windowDeactivated(e: WindowEvent?) {
-                                active = false
-                            }
-
-                        })
-
-                        val close by animateColorAsState(
-                            targetValue = if (active) {
-                                Color(0xffff5f57)
-                            } else {
-                                Color(0xFF53636a)
-                            }
+                Box(modifier = Modifier  .background(
+                    Brush.linearGradient(
+                        listOf(
+                            Color(0xff2b2d30),
+                            Color(0xff2b2d30),
+                            Color(0xff354b54),
+                            Color(0xff3c3f41),
+                            Color(0xff3c3f41),
+                            Color(0xff2b2d30),
+                            Color(0xff2b2d30)
                         )
-                        val min by animateColorAsState(
-                            targetValue = if (active) {
-                                Color(0xfffdbb2e)
-                            } else {
-                                Color(0xFF53636a)
-                            }
-                        )
-                        Row(modifier = Modifier.padding(20.dp, 12.dp, 0.dp, 0.dp)) {
-                            Box(
-                                modifier = Modifier.clip(RoundedCornerShape(6.0.dp))
-                                    .background(color = close).size(12.dp).hoverable(
-                                        m
-                                    ),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                if (hover) {
-                                    Icon(
-                                        imageVector = Icons.Filled.Close,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(10.dp),
-                                        tint = Color.Black
-                                    )
-                                }
-                            }
-                            Box(modifier = Modifier.size(8.dp)) {}
-                            Box(
-                                modifier = Modifier.clip(RoundedCornerShape(6.0.dp))
-                                    .background(color = min).size(12.dp).hoverable(
-                                        m
-                                    ),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                if (hover) {
-                                    Box(modifier = Modifier.size(6.dp, 1.dp).background(Color.Black)) {
-                                    }
-                                }
-                            }
-                        }
+                    )
+                ).fillMaxSize()){
+                    Column {
+                        Box(
+                            modifier = Modifier.background(
+                                Color.Transparent
+                            ).fillMaxWidth().height(35.dp)
+                                .onPointerEvent(
+                                    PointerEventType.Press
+                                ) {
 
-                    }
-                    Box(
-                        modifier = Modifier.background(
-                            Color.Transparent
-                        ).fillMaxSize()
-                    ) {
-                        Surface(
-                            color = Color.Transparent,
-                            modifier = Modifier.fillMaxSize(),
-                            shape = RoundedCornerShape(10.dp)
+                                    val event = it.nativeEvent
+                                    if (event is MouseEvent) {
+
+                                        //此为得到事件源组件
+                                        val cp = event.source as Component
+                                        Mouse.startX = cp.x
+                                        Mouse.startY = cp.y
+                                        Mouse.oldX = event.xOnScreen
+                                        Mouse.oldY = event.yOnScreen
+                                        val position = state.position
+                                        Mouse.oldXDP = position.x
+                                        Mouse.oldYDP = position.y
+                                    }
+                                }.onPointerEvent(PointerEventType.Move) {
+                                    val event = it.nativeEvent
+                                    if (event is MouseEvent) {
+                                        if (event.button != 1) {
+                                            return@onPointerEvent
+                                        }
+                                        event.source as Component
+                                        //鼠标拖动
+                                        Mouse.newX = event.xOnScreen
+                                        Mouse.newY = event.yOnScreen
+                                        //设置bounds,将点下时记录的组件开始坐标与鼠标拖动的距离相加
+                                        val x = Mouse.startX + (Mouse.newX - Mouse.oldX)
+                                        val y = Mouse.startY + (Mouse.newY - Mouse.oldY)
+                                        state.position = WindowPosition(Mouse.oldXDP + x.sp.toDp(), Mouse.oldYDP + y.sp.toDp())
+
+
+                                    }
+
+
+                                }
                         ) {
+                            val m = remember { MutableInteractionSource() }
+                            var active by remember { mutableStateOf(true) }
+                            val hover by m.collectIsHoveredAsState()
+                            window.addWindowListener(object : WindowListener {
+                                override fun windowOpened(e: WindowEvent?) {
 
+                                }
+
+                                override fun windowClosing(e: WindowEvent?) {
+
+                                }
+
+                                override fun windowClosed(e: WindowEvent?) {
+
+                                }
+
+                                override fun windowIconified(e: WindowEvent?) {
+
+                                }
+
+                                override fun windowDeiconified(e: WindowEvent?) {
+
+                                }
+
+                                override fun windowActivated(e: WindowEvent?) {
+                                    active = true
+                                }
+
+                                override fun windowDeactivated(e: WindowEvent?) {
+                                    active = false
+                                }
+
+                            })
+
+                            val close by animateColorAsState(
+                                targetValue = if (active) {
+                                    Color(0xffff5f57)
+                                } else {
+                                    Color(0xFF53636a)
+                                }
+                            )
+                            val min by animateColorAsState(
+                                targetValue = if (active) {
+                                    Color(0xfffdbb2e)
+                                } else {
+                                    Color(0xFF53636a)
+                                }
+                            )
+                            Row(modifier = Modifier.padding(15.dp, 12.dp, 0.dp, 0.dp)) {
+                                Box(
+                                    modifier = Modifier.clip(RoundedCornerShape(6.0.dp))
+                                        .background(color = close).size(12.dp).hoverable(
+                                            m
+                                        ).clickable {exitApplication()  },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    if (hover) {
+                                        Icon(
+                                            imageVector = Icons.Filled.Close,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(10.dp),
+                                            tint = Color.Black
+                                        )
+                                    }
+                                }
+                                Box(modifier = Modifier.size(8.dp)) {}
+                                Box(
+                                    modifier = Modifier.clip(RoundedCornerShape(6.0.dp))
+                                        .background(color = min).size(12.dp).hoverable(
+                                            m
+                                        ).clickable { window.isMinimized=true;},
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    if (hover) {
+                                        Box(modifier = Modifier.size(6.dp, 1.dp).background(Color.Black)) {
+                                        }
+                                    }
+                                }
+                            }
+
+                        }
+                        Box(
+                            modifier = Modifier.background(
+                                Color.Transparent
+                            ).fillMaxSize()
+                        ) {
+                            Surface(
+                                color = Color.Transparent,
+                                modifier = Modifier.fillMaxSize(),
+                                shape = RoundedCornerShape(10.dp)
+                            ) {
+
+                            }
                         }
                     }
                 }
+
 
 
             }

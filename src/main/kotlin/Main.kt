@@ -7,6 +7,7 @@ import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.Surface
@@ -42,7 +43,7 @@ fun main() = application {
     val state = rememberWindowState()
     Window(onCloseRequest = ::exitApplication, undecorated = true, state = state, transparent = true) {
         Box(
-            modifier = Modifier.background(Color.Transparent).fillMaxSize().padding(4.dp)
+            modifier = Modifier.background(Color.Transparent).fillMaxSize().padding(0.dp,0.dp,4.dp,4.dp)
         ) {
             Surface(
                 modifier = Modifier
@@ -199,7 +200,9 @@ fun main() = application {
                                 modifier = Modifier.fillMaxSize(),
                                 shape = RoundedCornerShape(10.dp)
                             ) {
+LazyColumn {
 
+}
                             }
                         }
                     }

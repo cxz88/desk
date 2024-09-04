@@ -1,8 +1,11 @@
-
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.calculatePan
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
@@ -23,8 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.onPointerEvent
+import androidx.compose.ui.input.pointer.*
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -43,71 +45,80 @@ fun main() = application {
     val state = rememberWindowState()
     Window(onCloseRequest = ::exitApplication, undecorated = true, state = state, transparent = true) {
         Box(
-            modifier = Modifier.background(Color.Transparent).fillMaxSize().padding(0.dp,0.dp,4.dp,4.dp)
+            modifier = Modifier.background(Color.Transparent).fillMaxSize().padding(0.dp, 0.dp, 4.dp, 4.dp)
         ) {
             Surface(
                 modifier = Modifier
-                  .fillMaxSize(),
+                    .fillMaxSize(),
                 shape = RoundedCornerShape(10.dp),
                 elevation = 2.dp,
                 color = Color.Transparent,
                 border = BorderStroke(.8.dp, Color(0x44abb0b3))
-                ) {
-                Box(modifier = Modifier  .background(
-                    Brush.linearGradient(
-                        listOf(
-                            Color(0xff2b2d30),
-                            Color(0xff2b2d30),
-                            Color(0xff354b54),
-                            Color(0xff3c3f41),
-                            Color(0xff3c3f41),
-                            Color(0xff2b2d30),
-                            Color(0xff2b2d30)
+            ) {
+                Box(
+                    modifier = Modifier.background(
+                        Brush.linearGradient(
+                            listOf(
+                                Color(0xff2b2d30),
+                                Color(0xff2b2d30),
+                                Color(0xff354b54),
+                                Color(0xff3c3f41),
+                                Color(0xff3c3f41),
+                                Color(0xff2b2d30),
+                                Color(0xff2b2d30)
+                            )
                         )
-                    )
-                ).fillMaxSize()){
+                    ).fillMaxSize()
+                ) {
                     Column {
                         Box(
                             modifier = Modifier.background(
                                 Color.Transparent
-                            ).fillMaxWidth().height(35.dp)
-                                .onPointerEvent(
-                                    PointerEventType.Press
-                                ) {
+                            ).fillMaxWidth()
+                                .pointerInput(Unit) {
+                                    awaitPointerEventScope {
+                                        var preXOnScreen = 0
+                                        var preYOnScreen = 0
+                                        var startX = 0
+                                        var startY = 0
+                                        var posX = 0.dp
+                                        var posY = 0.dp
+                                        while (true) {
+                                            val awaitPointerEvent = awaitPointerEvent()
+                                            if (awaitPointerEvent.type == PointerEventType.Press) {
+                                                val ne = awaitPointerEvent.nativeEvent
+                                                if (ne is MouseEvent) {
+                                                    preXOnScreen = ne.xOnScreen
+                                                    preYOnScreen = ne.yOnScreen
+                                                    val component = ne.source as Component
+                                                    startX = component.x
+                                                    startY = component.y
+                                                    val position = state.position
+                                                    posX = position.x
+                                                    posY = position.y
+                                                }
+                                            } else if (awaitPointerEvent.type == PointerEventType.Move) {
+                                                if (awaitPointerEvent.button.isPrimary) {
+                                                    val nativeEvent = awaitPointerEvent.nativeEvent
+                                                    if (nativeEvent is MouseEvent) {
+                                                        val xOnScreen = nativeEvent.xOnScreen
+                                                        val yOnScreen = nativeEvent.yOnScreen
+                                                        val xOffset = xOnScreen - preXOnScreen
+                                                        val yOffset = yOnScreen - preYOnScreen
+                                                        state.position =
+                                                            WindowPosition(
+                                                                posX + xOffset.toDp() + startX.dp,
+                                                                posY + yOffset.toDp() + startY.dp
+                                                            )
+                                                    }
+                                                }
 
-                                    val event = it.nativeEvent
-                                    if (event is MouseEvent) {
 
-                                        //此为得到事件源组件
-                                        val cp = event.source as Component
-                                        Mouse.startX = cp.x
-                                        Mouse.startY = cp.y
-                                        Mouse.oldX = event.xOnScreen
-                                        Mouse.oldY = event.yOnScreen
-                                        val position = state.position
-                                        Mouse.oldXDP = position.x
-                                        Mouse.oldYDP = position.y
-                                    }
-                                }.onPointerEvent(PointerEventType.Move) {
-                                    val event = it.nativeEvent
-                                    if (event is MouseEvent) {
-                                        if (event.button != 1) {
-                                            return@onPointerEvent
+                                            }
                                         }
-                                        event.source as Component
-                                        //鼠标拖动
-                                        Mouse.newX = event.xOnScreen
-                                        Mouse.newY = event.yOnScreen
-                                        //设置bounds,将点下时记录的组件开始坐标与鼠标拖动的距离相加
-                                        val x = Mouse.startX + (Mouse.newX - Mouse.oldX)
-                                        val y = Mouse.startY + (Mouse.newY - Mouse.oldY)
-                                        state.position = WindowPosition(Mouse.oldXDP + x.sp.toDp(), Mouse.oldYDP + y.sp.toDp())
-
-
                                     }
-
-
                                 }
+                                .height(35.dp)
                         ) {
                             val m = remember { MutableInteractionSource() }
                             var active by remember { mutableStateOf(true) }
@@ -162,7 +173,7 @@ fun main() = application {
                                     modifier = Modifier.clip(RoundedCornerShape(6.0.dp))
                                         .background(color = close).size(12.dp).hoverable(
                                             m
-                                        ).clickable {exitApplication()  },
+                                        ).clickable { exitApplication() },
                                     contentAlignment = Alignment.Center
                                 ) {
                                     if (hover) {
@@ -179,7 +190,7 @@ fun main() = application {
                                     modifier = Modifier.clip(RoundedCornerShape(6.0.dp))
                                         .background(color = min).size(12.dp).hoverable(
                                             m
-                                        ).clickable { window.isMinimized=true;},
+                                        ).clickable { window.isMinimized = true; },
                                     contentAlignment = Alignment.Center
                                 ) {
                                     if (hover) {
@@ -200,14 +211,13 @@ fun main() = application {
                                 modifier = Modifier.fillMaxSize(),
                                 shape = RoundedCornerShape(10.dp)
                             ) {
-LazyColumn {
+                                LazyColumn {
 
-}
+                                }
                             }
                         }
                     }
                 }
-
 
 
             }

@@ -1,7 +1,10 @@
 package com.chenxinzhi.ui
 
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.foundation.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.*
@@ -10,14 +13,9 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material.icons.rounded.Settings
-import androidx.compose.material.icons.sharp.Settings
-import androidx.compose.material.icons.twotone.Settings
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -30,6 +28,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.FrameWindowScope
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
@@ -94,8 +93,8 @@ fun FrameWindowScope.App(
                                             val yOffset = yOnScreen - preYOnScreen
                                             state.position =
                                                 WindowPosition(
-                                                    posX + xOffset.toDp() + startX.dp,
-                                                    posY + yOffset.toDp() + startY.dp
+                                                    posX + xOffset.sp.toDp() + startX.sp.toDp(),
+                                                    posY + yOffset.sp.toDp() + startY.sp.toDp()
                                                 )
                                         }
                                     }
@@ -215,7 +214,7 @@ fun FrameWindowScope.App(
 
                     }
                     Row(
-                        modifier = Modifier.offset { IntOffset(0, -5) }.width(400.dp).fillMaxHeight(),
+                        modifier = Modifier.offset { IntOffset(0, -5.dp.roundToPx()) }.width(400.dp).fillMaxHeight(),
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         verticalAlignment = Alignment.Bottom
                     ) {
@@ -253,25 +252,25 @@ fun FrameWindowScope.App(
                     ) {
                         Box(
                             modifier = Modifier
-                                .offset { IntOffset(0, -5) }.clip(shape = RoundedCornerShape(16.dp))
+                                .offset { IntOffset(0, -5.dp.roundToPx()) }.clip(shape = RoundedCornerShape(16.dp))
                                 .width(150.dp).height(25.dp).background(globalStyle.current.searchColor)
                         ) {
                             Icon(Icons.Default.Search,
                                 contentDescription = null,
                                 tint = globalStyle.current.searchIconColor,
                                 modifier = Modifier
-                                    .offset { IntOffset(4, 4) }
+                                    .offset { IntOffset(4.dp.roundToPx(), 4.dp.roundToPx()) }
                                     .size(20.dp))
                             Text(
                                 "搜索",
                                 color = globalStyle.current.textUnCheckColor,
                                 fontSize = GlobalStyle.defaultSearchFontSize,
-                                modifier = Modifier.offset { IntOffset(25, 0) }
+                                modifier = Modifier.offset { IntOffset(25.dp.roundToPx(), 0) }
                             )
 
                         }
                         Box(modifier = Modifier.width(10.dp))
-                        Row(modifier = Modifier.offset { IntOffset(0,-6) }.fillMaxHeight(), verticalAlignment = Alignment.Bottom) {
+                        Row(modifier = Modifier.offset { IntOffset(0,-6.dp.roundToPx()) }.fillMaxHeight(), verticalAlignment = Alignment.Bottom) {
                             Icon(
                                 Icons.Outlined.Settings,
                                 contentDescription = null,

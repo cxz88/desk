@@ -1,10 +1,11 @@
 package com.chenxinzhi.ui
 
 
-import androidx.compose.runtime.*
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 
@@ -25,4 +26,16 @@ object GlobalStyle {
     val searchColor by mutableStateOf( Color(0xff4b4b4b))
     val searchIconColor by mutableStateOf( Color(0x66FFFFFF))
     val topBarRightColor by mutableStateOf( Color(0xff777777))
+    val rightColor by mutableStateOf( Color(0xff202020))
+    val contentBackgroundColor by mutableStateOf( Color(0xff252525))
+    val scrollColor by mutableStateOf( Color(0xff404040))
+    val scrollCheckColor by mutableStateOf( Color(0xff484848))
+    val avatarFontSize by mutableStateOf( 14.sp)
+    val avatarFontColor by mutableStateOf( Color(0xffb1b1b1))
+    val leftFontSize by mutableStateOf( 14.sp)
+    val avatarFontRightIconColor by mutableStateOf( Color(0xff636363))
+    val leftCheckBackgroundColor by mutableStateOf( Color(0xff1b1b1b))
+    val leftUnCheckBackgroundColor by mutableStateOf( Color(0xff202020))
+    val leftCheckFontColor by mutableStateOf( Color(0xffc93830))
+    val leftUnCheckFontColor by mutableStateOf( Color(0xffb1b1b1))
 }

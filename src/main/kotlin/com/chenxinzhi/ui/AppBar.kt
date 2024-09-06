@@ -45,16 +45,16 @@ import java.awt.event.WindowListener
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun FrameWindowScope.App(
+fun FrameWindowScope.AppBar(
     state: WindowState,
     exitApplication: () -> Unit,
-    content: @Composable FrameWindowScope.() -> Unit
+    content: @Composable FrameWindowScope.() -> Unit={}
 ) {
     Box(
         modifier = Modifier.clip(shape = RoundedCornerShape(10.dp))
             .border(.01.dp, color = Color(0x33ffffff), RoundedCornerShape(10.dp)).background(
                 color = GlobalStyle.backgroundColor
-            ).fillMaxSize()
+            ).fillMaxWidth()
     ) {
         Column {
             Box(
@@ -159,7 +159,7 @@ fun FrameWindowScope.App(
                         modifier = Modifier.fillMaxHeight().width(200.dp)
                             .background(GlobalStyle.backgroundTopLeftColor).padding(
                                 end = 10.dp, bottom = 10.dp
-                            )
+                            ).padding(bottom = 6.dp)
                     ) {
                         Row(modifier = Modifier.width(100.dp).padding(15.dp, 12.dp, 0.dp, 0.dp)) {
                             Box(
@@ -214,7 +214,7 @@ fun FrameWindowScope.App(
 
                     }
                     Row(
-                        modifier = Modifier.offset { IntOffset(0, -5.dp.roundToPx()) }.width(400.dp).fillMaxHeight(),
+                        modifier = Modifier.offset { IntOffset(0, -5.dp.roundToPx()) }.width(400.dp).fillMaxHeight().padding(bottom = 6.dp),
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         verticalAlignment = Alignment.Bottom
                     ) {
@@ -245,14 +245,14 @@ fun FrameWindowScope.App(
                         )
                     }
                     Row(
-                        modifier = Modifier.offset { IntOffset(0, 0) }.weight(1f).fillMaxHeight(),
+                        modifier = Modifier.offset { IntOffset(0, 0) }.weight(1f).fillMaxHeight().padding(bottom = 6.dp),
                         horizontalArrangement = Arrangement.End,
                         verticalAlignment = Alignment.Bottom
 
                     ) {
                         Box(
                             modifier = Modifier
-                                .offset { IntOffset(0, -5.dp.roundToPx()) }.clip(shape = RoundedCornerShape(16.dp))
+                                .offset { IntOffset(0, -4.dp.roundToPx()) }.clip(shape = RoundedCornerShape(16.dp))
                                 .width(150.dp).height(25.dp).background(globalStyle.current.searchColor)
                         ) {
                             Icon(Icons.Default.Search,

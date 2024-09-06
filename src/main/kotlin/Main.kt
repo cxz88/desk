@@ -1,4 +1,3 @@
-
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.layout.*
@@ -121,11 +120,21 @@ fun main() = application {
                                         }
                                         var show by remember { mutableStateOf(false) }
                                         var move by remember { mutableStateOf(false) }
-                                        LaunchedEffect(scrollState.isScrollInProgress, move) {
-                                            if (scrollState.isScrollInProgress || move) {
+                                        var isFirst by remember { mutableStateOf(true) }
+                                        val rememberScrollbarAdapter = rememberScrollbarAdapter(scrollState)
+                                        LaunchedEffect(
+                                            scrollState.isScrollInProgress,
+                                            rememberScrollbarAdapter.scrollOffset
+                                        ) {
+                                            if (scrollState.isScrollInProgress) {
                                                 show = true
                                             } else {
-                                                delay(3000)
+                                                if (isFirst) {
+                                                    isFirst = false
+                                                } else {
+                                                    show = true
+                                                }
+                                                delay(2000)
                                                 show = false
                                             }
                                         }
@@ -135,11 +144,11 @@ fun main() = application {
                                                     .pointerInput(Unit) {
                                                         awaitEachGesture {
                                                             val awaitPointerEvent = awaitPointerEvent()
-                                                            move = awaitPointerEvent.type== PointerEventType.Move
+                                                            move = awaitPointerEvent.type == PointerEventType.Move
                                                         }
 
                                                     },
-                                                adapter = rememberScrollbarAdapter(scrollState),
+                                                adapter = rememberScrollbarAdapter,
                                                 style = ScrollbarStyle(
                                                     minimalHeight = 16.dp,
                                                     thickness = 8.dp,

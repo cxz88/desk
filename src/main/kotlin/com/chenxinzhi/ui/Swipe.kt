@@ -48,7 +48,7 @@ fun SwipeContent(imageList: List<String>, state: SwipeState) {
     Column {
         Row {
             Box(
-                modifier = Modifier.height(250.dp).width(750.dp).padding(top = 20.dp, bottom = 20.dp),
+                modifier = Modifier.size(750.dp,250.dp).padding(top = 20.dp, bottom = 20.dp),
             ) {
                 imageList.forEachIndexed { index, item ->
 
@@ -94,7 +94,6 @@ fun SwipeContent(imageList: List<String>, state: SwipeState) {
                 }
 
             }
-            Box(modifier = Modifier.background(globalStyle.current.contentBackgroundColor).height(250.dp).fillMaxWidth()) {}
         }
 
 

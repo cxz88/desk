@@ -28,7 +28,6 @@ fun RightContent() {
             item {
                 Surface(
                     modifier = Modifier
-                        .height(250.dp)
                         .background(globalStyle.current.contentBackgroundColor)
                         .padding(horizontal = 20.dp),
                     color = globalStyle.current.contentBackgroundColor

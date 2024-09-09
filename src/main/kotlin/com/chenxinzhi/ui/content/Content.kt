@@ -1,4 +1,4 @@
-package com.chenxinzhi.ui
+package com.chenxinzhi.ui.content
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -23,7 +23,7 @@ import com.chenxinzhi.ui.topbar.Bar
  */
 
 @Composable
-fun FrameWindowScope.AppContent(
+fun FrameWindowScope.Content(
     state: WindowState,
     exitApplication: () -> Unit,
     content: @Composable FrameWindowScope.() -> Unit={}

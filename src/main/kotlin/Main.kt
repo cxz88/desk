@@ -1,3 +1,4 @@
+
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.layout.*
@@ -15,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -43,8 +45,10 @@ fun main() = application {
         title = "",
         resizable = false,
     ) {
+
         CompositionLocalProvider(globalStyle provides GlobalStyle) {
             MaterialTheme {
+
                 Column {
                     AppBar(state = state, { exitApplication() }) {
                         Row {
@@ -180,6 +184,16 @@ fun main() = application {
 
                                         }
                                     }
+                                    item {                 MediaPlayer(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        url = "https://commondatastorage.googleapis.com/codeskulptor-demos/DDR_assets/Kangaroo_MusiQue_-_The_Neverwritten_Role_Playing_Game.mp3",
+                                        startTime = Color.Black,
+                                        endTime = Color.Black,
+                                        volumeIconColor = Color.Black,
+                                        playIconColor = Color.Blue,
+                                        sliderTrackColor = Color.LightGray,
+                                        sliderIndicatorColor = Color.Blue
+                                    ) }
                                     items(20) {
                                         Box(modifier = Modifier.fillMaxWidth()) {
                                             Text("第$it")

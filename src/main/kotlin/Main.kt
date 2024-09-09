@@ -1,37 +1,17 @@
 
-import androidx.compose.foundation.*
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Icon
+import androidx.compose.foundation.layout.Row
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.DpSize
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.application
-import androidx.compose.ui.window.rememberWindowState
-import com.chenxinzhi.ui.AppBar
-import com.chenxinzhi.ui.GlobalStyle
-import com.chenxinzhi.ui.Swipe
-import com.chenxinzhi.ui.globalStyle
-import kotlinx.coroutines.delay
+import androidx.compose.ui.window.*
+import com.chenxinzhi.ui.AppContent
+import com.chenxinzhi.ui.content.LeftContent
+import com.chenxinzhi.ui.content.RightContent
+import com.chenxinzhi.ui.style.GlobalStyle
+import com.chenxinzhi.ui.style.globalStyle
 
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -45,184 +25,32 @@ fun main() = application {
         title = "",
         resizable = false,
     ) {
-
-        CompositionLocalProvider(globalStyle provides GlobalStyle) {
-            MaterialTheme {
-
-                Column {
-                    AppBar(state = state, { exitApplication() }) {
-                        Row {
-                            Box(
-                                modifier = Modifier
-                                    .width(200.dp).fillMaxHeight().background(GlobalStyle.rightColor)
-                            ) {
-                                Column {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Image(
-                                            painterResource("image/avatar.jpeg"),
-                                            contentDescription = null,
-                                            contentScale = ContentScale.Crop,
-                                            modifier = Modifier.size(60.dp)
-                                                .padding(10.dp)
-                                                .clip(CircleShape)
-                                        )
-                                        Text(
-                                            "往事知多少",
-                                            fontSize = globalStyle.current.avatarFontSize,
-                                            color = globalStyle.current.avatarFontColor
-                                        )
-                                        Box(modifier = Modifier.width(8.dp))
-                                        Icon(painter = painterResource("image/ic_triangle_right.webp"),
-                                            contentDescription = null,
-                                            tint = globalStyle.current.avatarFontRightIconColor,
-                                            modifier = Modifier
-                                                .offset { IntOffset(0, 2.dp.roundToPx()) }
-                                                .size(8.dp)
-
-                                        )
-                                    }
-                                    val listItem = listOf(
-                                        "发现音乐" to painterResource("image/ic_sound_effect.webp"),
-                                        "播客" to painterResource("image/ic_sound_effect.webp"),
-                                        "私人漫游" to painterResource("image/ic_sound_effect.webp"),
-                                        "视频" to painterResource("image/ic_sound_effect.webp"),
-                                        "关注" to painterResource("image/ic_sound_effect.webp"),
-                                    )
-                                    Box {
-                                        val scrollState = rememberLazyListState()
-                                        LazyColumn(state = scrollState) {
-
-                                            val checkItem = 0
-                                            itemsIndexed(listItem) { index, item ->
-                                                Row(
-                                                    verticalAlignment = Alignment.CenterVertically,
-                                                    modifier = Modifier.fillMaxWidth().padding(end = 10.dp)
-                                                        .height(35.dp)
-                                                        .background(
-                                                            if (index == checkItem) globalStyle.current.leftCheckBackgroundColor else globalStyle.current.leftUnCheckBackgroundColor
-                                                        )
-                                                ) {
-                                                    Box(modifier = Modifier.width(20.dp))
-                                                    Icon(
-                                                        item.second,
-                                                        contentDescription = null,
-                                                        modifier = Modifier.size(18.dp),
-                                                        tint = if (index == checkItem) globalStyle.current.leftCheckFontColor else globalStyle.current.leftUnCheckFontColor,
-                                                    )
-                                                    Box(modifier = Modifier.width(8.dp))
-                                                    Text(
-                                                        item.first,
-                                                        color = if (index == checkItem) globalStyle.current.leftCheckFontColor else globalStyle.current.leftUnCheckFontColor,
-                                                        fontSize = globalStyle.current.leftFontSize
-                                                    )
-                                                }
-                                            }
-                                            items(50) {
-                                                Row(modifier = Modifier.fillMaxWidth()) { Text("111") }
-                                            }
-
-                                        }
-                                        var show by remember { mutableStateOf(false) }
-                                        var move by remember { mutableStateOf(false) }
-                                        var isFirst by remember { mutableStateOf(true) }
-                                        val rememberScrollbarAdapter = rememberScrollbarAdapter(scrollState)
-                                        LaunchedEffect(
-                                            scrollState.isScrollInProgress,
-                                            rememberScrollbarAdapter.scrollOffset
-                                        ) {
-                                            if (scrollState.isScrollInProgress) {
-                                                show = true
-                                            } else {
-                                                if (isFirst) {
-                                                    isFirst = false
-                                                } else {
-                                                    show = true
-                                                }
-                                                delay(2000)
-                                                show = false
-                                            }
-                                        }
-                                        if (show) {
-                                            VerticalScrollbar(
-                                                modifier = Modifier.align(Alignment.CenterEnd)
-                                                    .pointerInput(Unit) {
-                                                        awaitEachGesture {
-                                                            val awaitPointerEvent = awaitPointerEvent()
-                                                            move = awaitPointerEvent.type == PointerEventType.Move
-                                                        }
-
-                                                    },
-                                                adapter = rememberScrollbarAdapter,
-                                                style = ScrollbarStyle(
-                                                    minimalHeight = 16.dp,
-                                                    thickness = 8.dp,
-                                                    shape = RoundedCornerShape(4.dp),
-                                                    hoverDurationMillis = 300,
-                                                    unhoverColor = globalStyle.current.scrollColor,
-                                                    hoverColor = globalStyle.current.scrollCheckColor
-                                                )
-                                            )
-                                        }
-
-                                    }
-
-                                }
-                            }
-                            Box {
-
-                                val scrollState = rememberLazyListState()
-                                LazyColumn(state = scrollState) {
-                                    item {
-                                        Surface(
-                                            modifier = Modifier
-                                                .height(250.dp)
-                                                .background(globalStyle.current.contentBackgroundColor)
-                                                .padding(horizontal = 20.dp),
-                                            color = globalStyle.current.contentBackgroundColor
-                                        ) {
-                                            Swipe()
-
-                                        }
-                                    }
-                                    item {                 MediaPlayer(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        url = "https://commondatastorage.googleapis.com/codeskulptor-demos/DDR_assets/Kangaroo_MusiQue_-_The_Neverwritten_Role_Playing_Game.mp3",
-                                        startTime = Color.Black,
-                                        endTime = Color.Black,
-                                        volumeIconColor = Color.Black,
-                                        playIconColor = Color.Blue,
-                                        sliderTrackColor = Color.LightGray,
-                                        sliderIndicatorColor = Color.Blue
-                                    ) }
-                                    items(20) {
-                                        Box(modifier = Modifier.fillMaxWidth()) {
-                                            Text("第$it")
-                                            Box(modifier = Modifier.height(100.dp))
-                                        }
-                                    }
-                                }
-                                VerticalScrollbar(
-                                    modifier = Modifier.align(Alignment.CenterEnd),
-                                    adapter = rememberScrollbarAdapter(scrollState),
-                                    style = ScrollbarStyle(
-                                        minimalHeight = 16.dp,
-                                        thickness = 8.dp,
-                                        shape = RoundedCornerShape(4.dp),
-                                        hoverDurationMillis = 300,
-                                        unhoverColor = globalStyle.current.scrollColor,
-                                        hoverColor = globalStyle.current.scrollCheckColor
-                                    )
-                                )
-                            }
-                        }
-                    }
-
-                }
-            }
-
-        }
+        App(state, ::exitApplication)
 
 
     }
 }
+
+@Composable
+private fun FrameWindowScope.App(
+    state: WindowState,
+    closeApp: () -> Unit,
+) {
+    CompositionLocalProvider(globalStyle provides GlobalStyle) {
+        MaterialTheme {
+            AppContent(state = state, { closeApp() }) {
+                Row {
+                    LeftContent()
+                    RightContent()
+                }
+            }
+
+
+        }
+
+    }
+}
+
+
+
 

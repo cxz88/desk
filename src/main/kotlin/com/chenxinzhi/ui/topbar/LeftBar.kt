@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.FrameWindowScope
@@ -33,12 +34,22 @@ fun FrameWindowScope.LeftBar(
                 end = 10.dp, bottom = 10.dp
             ).padding(bottom = 6.dp)
     ) {
-        Row(modifier = Modifier.width(100.dp).padding(15.dp, 12.dp, 0.dp, 0.dp)) {
+        Row(modifier = Modifier
+
+            .width(100.dp).padding(15.dp, 12.dp, 0.dp, 0.dp)) {
             Box(
                 modifier = Modifier.clip(RoundedCornerShape(6.0.dp))
                     .background(color = closeColor).size(12.dp).hoverable(
                         mutableInteractionSource
-                    ).clickable { exitApplication() },
+                    )
+                    .pointerInput(Unit) {
+                        awaitPointerEventScope {
+                            while (true) {
+                                val awaitPointerEvent = awaitPointerEvent()
+                                awaitPointerEvent.changes[0].consume()
+                            }
+                        }
+                    }.clickable { exitApplication() },
                 contentAlignment = Alignment.Center
             ) {
                 if (isHover) {
@@ -55,7 +66,15 @@ fun FrameWindowScope.LeftBar(
                 modifier = Modifier.clip(RoundedCornerShape(6.0.dp))
                     .background(color = minColor).size(12.dp).hoverable(
                         mutableInteractionSource
-                    ).clickable { window.isMinimized = true; },
+                    )
+                    .pointerInput(Unit) {
+                        awaitPointerEventScope {
+                            while (true) {
+                                val awaitPointerEvent = awaitPointerEvent()
+                                awaitPointerEvent.changes[0].consume()
+                            }
+                        }
+                    }.clickable { window.isMinimized = true; },
                 contentAlignment = Alignment.Center
             ) {
                 if (isHover) {

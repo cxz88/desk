@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.FrameWindowScope
 import androidx.compose.ui.window.WindowState
+import com.chenxinzhi.ui.compoent.MediaPlayer
 import com.chenxinzhi.ui.style.GlobalStyle
 import com.chenxinzhi.ui.topbar.Bar
 
@@ -38,6 +39,9 @@ fun FrameWindowScope.Content(
             Bar(state, exitApplication)
             content()
         }
+        //播放器
+        MediaPlayer()
+
 
 
     }

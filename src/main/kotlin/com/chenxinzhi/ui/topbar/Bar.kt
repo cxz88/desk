@@ -13,7 +13,6 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.isPrimary
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -45,6 +44,9 @@ fun FrameWindowScope.Bar(
                     var posY = 0.dp
                     while (true) {
                         val awaitPointerEvent = awaitPointerEvent()
+                        if (awaitPointerEvent.changes[0].isConsumed) {
+                           continue
+                        }
                         if (awaitPointerEvent.type == PointerEventType.Press) {
                             val ne = awaitPointerEvent.nativeEvent
                             if (ne is MouseEvent) {
@@ -58,19 +60,20 @@ fun FrameWindowScope.Bar(
                                 posY = position.y
                             }
                         } else if (awaitPointerEvent.type == PointerEventType.Move) {
-                            if (awaitPointerEvent.button.isPrimary) {
-                                val nativeEvent = awaitPointerEvent.nativeEvent
-                                if (nativeEvent is MouseEvent) {
-                                    val xOnScreen = nativeEvent.xOnScreen
-                                    val yOnScreen = nativeEvent.yOnScreen
-                                    val xOffset = xOnScreen - preXOnScreen
-                                    val yOffset = yOnScreen - preYOnScreen
-                                    state.position =
-                                        WindowPosition(
-                                            posX + xOffset.sp.toDp() + startX.sp.toDp(),
-                                            posY + yOffset.sp.toDp() + startY.sp.toDp()
-                                        )
+                            val nativeEvent = awaitPointerEvent.nativeEvent
+                            if (nativeEvent is MouseEvent) {
+                                if (nativeEvent.modifiersEx != MouseEvent.BUTTON1_DOWN_MASK) {
+                                    continue
                                 }
+                                val xOnScreen = nativeEvent.xOnScreen
+                                val yOnScreen = nativeEvent.yOnScreen
+                                val xOffset = xOnScreen - preXOnScreen
+                                val yOffset = yOnScreen - preYOnScreen
+                                state.position =
+                                    WindowPosition(
+                                        posX + xOffset.sp.toDp() + startX.sp.toDp(),
+                                        posY + yOffset.sp.toDp() + startY.sp.toDp()
+                                    )
                             }
 
 

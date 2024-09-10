@@ -2,20 +2,37 @@ package com.chenxinzhi.ui.compoent
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.input.key.Key.Companion.R
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.chenxinzhi.ui.style.globalStyle
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -32,6 +49,50 @@ fun MediaPlayer() {
             .height(62.dp)
     ) {
         MusicLinearProgressIndicator()
+        Box(modifier = Modifier.padding(top = 2.dp)) {
+            Row {
+                Image(
+                    painterResource("image/musicPic.jpg"),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .padding(top = 8.dp, start = 10.dp)
+                        .size(42.dp)
+                        .clip(RoundedCornerShape(6.dp))
+                )
+                Box(modifier = Modifier.width(10.dp))
+                Column {
+                    Box(modifier = Modifier.height(8.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            "带我去找夜生活",
+                            overflow = TextOverflow.Ellipsis,
+                            fontSize = globalStyle.current.mediaPlayerMusicNameSize,
+                            lineHeight = globalStyle.current.mediaPlayerMusicNameSize,
+                            color = globalStyle.current.mediaPlayerMusicNameColor,
+                            textAlign =TextAlign.Center
+                        )
+                        Box(Modifier.width(2.dp))
+                        Text(
+                            "-", fontSize = globalStyle.current.mediaPlayerMusicSingerNameSize,
+                            color = globalStyle.current.mediaPlayerMusicSingerNameColor,
+                            textAlign =TextAlign.Center,
+                            lineHeight = globalStyle.current.mediaPlayerMusicSingerNameSize
+                        )
+                        Box(Modifier.width(2.dp))
+
+                        Text(
+                            "告五人",
+                            fontSize = globalStyle.current.mediaPlayerMusicSingerNameSize,
+                            color = globalStyle.current.mediaPlayerMusicSingerNameColor,
+                            textAlign =TextAlign.Center,
+                            lineHeight = globalStyle.current.mediaPlayerMusicSingerNameSize
+                        )
+                    }
+
+                }
+            }
+        }
     }
 }
 

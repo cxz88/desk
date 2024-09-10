@@ -38,4 +38,6 @@ object GlobalStyle {
     val leftUnCheckBackgroundColor by mutableStateOf( Color(0xff202020))
     val leftCheckFontColor by mutableStateOf( Color(0xffc93830))
     val leftUnCheckFontColor by mutableStateOf( Color(0xffb1b1b1))
+    val mediaPlayerBackgroundColor by mutableStateOf(Color(0xff252525))
+    val mediaPlayerProcessColor by mutableStateOf(Color(0xffd33a31))
 }

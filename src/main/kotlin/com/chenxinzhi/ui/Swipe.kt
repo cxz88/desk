@@ -18,6 +18,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import com.chenxinzhi.ui.style.globalStyle
 import kotlinx.coroutines.delay
 import kotlin.math.min
 
@@ -25,14 +26,14 @@ import kotlin.math.min
 fun Swipe() {
     val state by remember { mutableStateOf(SwipeState(5)) }
     Box {
-        extracted(listOf("image/1.jpg", "image/2.jpg", "image/3.jpg", "image/4.jpg", "image/5.jpg"), state)
+        SwipeContent(listOf("image/1.jpg", "image/2.jpg", "image/3.jpg", "image/4.jpg", "image/5.jpg"), state)
     }
 
 }
 
 
 @Composable
-private fun extracted(imageList: List<String>, state: SwipeState) {
+fun SwipeContent(imageList: List<String>, state: SwipeState) {
     val nowIndex = state.index
     LaunchedEffect(Unit) {
         while (true) {
@@ -47,7 +48,7 @@ private fun extracted(imageList: List<String>, state: SwipeState) {
     Column {
         Row {
             Box(
-                modifier = Modifier.height(250.dp).width(750.dp).padding(top = 20.dp, bottom = 20.dp),
+                modifier = Modifier.size(750.dp,250.dp).padding(top = 20.dp, bottom = 20.dp),
             ) {
                 imageList.forEachIndexed { index, item ->
 
@@ -93,7 +94,6 @@ private fun extracted(imageList: List<String>, state: SwipeState) {
                 }
 
             }
-            Box(modifier = Modifier.background(globalStyle.current.contentBackgroundColor).height(250.dp).fillMaxWidth()) {}
         }
 
 

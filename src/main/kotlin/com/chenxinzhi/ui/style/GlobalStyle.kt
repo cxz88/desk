@@ -1,4 +1,4 @@
-package com.chenxinzhi.ui
+package com.chenxinzhi.ui.style
 
 
 import androidx.compose.runtime.compositionLocalOf
@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 
@@ -38,4 +39,11 @@ object GlobalStyle {
     val leftUnCheckBackgroundColor by mutableStateOf( Color(0xff202020))
     val leftCheckFontColor by mutableStateOf( Color(0xffc93830))
     val leftUnCheckFontColor by mutableStateOf( Color(0xffb1b1b1))
+    val mediaPlayerBackgroundColor by mutableStateOf(Color(0xff252525))
+    val mediaPlayerProcessColor by mutableStateOf(Color(0xffd33a31))
+    val mediaPlayerMusicNameSize by mutableStateOf(13.sp)
+    val mediaPlayerMusicNameColor by mutableStateOf(Color(0xffbebebe))
+    val mediaPlayerMusicSingerNameSize by mutableStateOf(11.sp)
+    val mediaPlayerMusicSingerNameColor by mutableStateOf(Color(0xff939393))
+    val mediaPlayerMusicSingerNameCheckColor by mutableStateOf(Color(0xff252525))
 }

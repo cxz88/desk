@@ -1,18 +1,13 @@
 package com.chenxinzhi.ui.compoent
 
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.draggable
-import androidx.compose.foundation.gestures.rememberDraggableState
-import androidx.compose.foundation.gestures.snapping.SnapPosition
-import androidx.compose.foundation.hoverable
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
@@ -21,19 +16,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.input.key.Key.Companion.R
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.chenxinzhi.ui.style.globalStyle
+import javafx.application.Platform
+import javafx.scene.media.Media
+import javafx.scene.media.MediaPlayer
+import javafx.util.Duration
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.math.min
 import kotlin.math.roundToInt
 
@@ -43,12 +39,74 @@ import kotlin.math.roundToInt
  * @date 2024/9/9
  */
 @Composable
-fun MediaPlayer() {
+fun MediaPlayer(url: String = "") {
+    var duration by remember { mutableStateOf(0f) }
+    var isLoaded by remember { mutableStateOf(false) }
+    var isPlaying by remember { mutableStateOf(false) }
+    var volume by remember { mutableStateOf(1f) }
+    var mediaPlayerState by remember { mutableStateOf<MediaPlayer?>(null) }
+    var currentTime by remember { mutableStateOf(0f) }
+    val progress by remember {
+        derivedStateOf {
+            if (currentTime == 0f && duration == 0f) {
+                0f
+            } else {
+                currentTime / duration
+            }
+        }
+    }
+    val rememberCoroutineScope = rememberCoroutineScope()
+    var isWait by remember { mutableStateOf(false) }
+    DisposableEffect(url) {
+        Platform.startup {
+            val media = Media(url)
+            val mediaPlayer = MediaPlayer(media).apply {
+                setOnReady {
+                    duration = media.duration.toSeconds().toFloat()
+                    isLoaded = true
+                }
+                currentTimeProperty().addListener { _, _, newValue ->
+                    if (isWait) {
+                        return@addListener
+                    }
+                    currentTime = newValue.toSeconds().toFloat()
+
+
+                }
+                setOnEndOfMedia {
+                    isPlaying = false
+                }
+
+                volumeProperty().value = volume.toDouble()
+            }
+            mediaPlayerState = mediaPlayer.apply {
+                cycleCount = MediaPlayer.INDEFINITE
+                play()
+            }
+
+        }
+
+        onDispose {
+            mediaPlayerState?.dispose()
+        }
+    }
+
     Box(
         modifier = Modifier.background(globalStyle.current.mediaPlayerBackgroundColor).fillMaxWidth()
             .height(62.dp)
     ) {
-        MusicLinearProgressIndicator()
+        MusicLinearProgressIndicator(progress) {
+            //将当前的时间加上对应的百分比
+            rememberCoroutineScope.launch {
+                isWait = true
+                val d = duration * it.toDouble()
+                currentTime = d.toFloat()
+                mediaPlayerState?.seek(Duration.seconds(d))
+                delay(1)
+                isWait = false
+            }
+
+        }
         Box(modifier = Modifier.padding(top = 2.dp)) {
             Row {
                 Image(
@@ -70,13 +128,13 @@ fun MediaPlayer() {
                             fontSize = globalStyle.current.mediaPlayerMusicNameSize,
                             lineHeight = globalStyle.current.mediaPlayerMusicNameSize,
                             color = globalStyle.current.mediaPlayerMusicNameColor,
-                            textAlign =TextAlign.Center
+                            textAlign = TextAlign.Center
                         )
                         Box(Modifier.width(2.dp))
                         Text(
                             "-", fontSize = globalStyle.current.mediaPlayerMusicSingerNameSize,
                             color = globalStyle.current.mediaPlayerMusicSingerNameColor,
-                            textAlign =TextAlign.Center,
+                            textAlign = TextAlign.Center,
                             lineHeight = globalStyle.current.mediaPlayerMusicSingerNameSize
                         )
                         Box(Modifier.width(2.dp))
@@ -85,7 +143,7 @@ fun MediaPlayer() {
                             "告五人",
                             fontSize = globalStyle.current.mediaPlayerMusicSingerNameSize,
                             color = globalStyle.current.mediaPlayerMusicSingerNameColor,
-                            textAlign =TextAlign.Center,
+                            textAlign = TextAlign.Center,
                             lineHeight = globalStyle.current.mediaPlayerMusicSingerNameSize
                         )
                     }
@@ -96,11 +154,14 @@ fun MediaPlayer() {
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun MusicLinearProgressIndicator() {
+fun MusicLinearProgressIndicator(processOut: Float, seek: (Float) -> Unit) {
+    var processInner by remember { mutableStateOf(0f) }
+    var useInner by remember { mutableStateOf(false) }
+    val process by animateFloatAsState(if (useInner) processInner else processOut, tween(1))
     BoxWithConstraints {
         val processWidth = constraints.maxWidth
-        var process by remember { mutableStateOf(0f) }
         val processWidthUse = min(processWidth * process, processWidth.toFloat())
         val mediaPlayerProcessColor = globalStyle.current.mediaPlayerProcessColor
         Canvas(
@@ -114,22 +175,41 @@ fun MusicLinearProgressIndicator() {
         val interactionSource = remember { MutableInteractionSource() }
         val hover by interactionSource.collectIsHoveredAsState()
         val alpha by animateFloatAsState(if (hover) 1f else 0f)
-        Canvas(
-            Modifier
-                .offset {
-                    val fl = 12.dp.toPx() / 2 - 1
-                    IntOffset(-fl.roundToInt() + processWidthUse.roundToInt(), -fl.roundToInt())
+        Box(modifier = Modifier.fillMaxWidth().height(12.dp).hoverable(interactionSource)
+            .pointerInput(Unit) {
+                detectTapGestures {
+                    seek(it.x / processWidth)
                 }
-                .draggable(rememberDraggableState { delta ->
-                    process += delta / processWidth
-                    println(process)
-
-                }, Orientation.Horizontal)
-                .size(12.dp)
-                .hoverable(interactionSource).alpha(alpha)
+            }
         ) {
-            drawCircle(mediaPlayerProcessColor)
+            Canvas(
+                Modifier
+                    .offset {
+                        val fl = 12.dp.toPx() / 2 - 1
+                        IntOffset(-fl.roundToInt() + processWidthUse.roundToInt(), -fl.roundToInt())
+                    }
+                    .size(12.dp)
+                    .alpha(alpha)
+                    .pointerInput(Unit) {
+                        detectDragGestures(matcher = PointerMatcher.Primary, onDragEnd = {
+                            //应用进度条更改
+                            seek(processInner)
+                            useInner = false
+
+                        }, onDragStart = {
+                            processInner = process
+
+                        }) {
+                            useInner = true
+                            processInner += (it.x / processWidth)
+                        }
+
+                    }
+            ) {
+                drawCircle(mediaPlayerProcessColor)
+            }
         }
+
 
     }
 }

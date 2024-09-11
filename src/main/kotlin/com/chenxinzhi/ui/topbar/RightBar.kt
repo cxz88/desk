@@ -31,6 +31,7 @@ fun RowScope.RightBar() {
             "个性推荐",
             color = GlobalStyle.textCheckColor,
             fontSize = GlobalStyle.defaultFontSize
+
         )
         Text(
             "歌单",

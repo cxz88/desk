@@ -37,9 +37,10 @@ fun FrameWindowScope.Content(
             Bar(state, exitApplication)
             content()
         }
+
         //播放器
         Column(verticalArrangement = Arrangement.Bottom, modifier = Modifier.fillMaxSize()) {
-            MediaPlayer()
+            MediaPlayer("file:/Volumes/MF/desk/build/resources/main/music/M500000SFLv10YFDuo.mp3")
         }
 
 

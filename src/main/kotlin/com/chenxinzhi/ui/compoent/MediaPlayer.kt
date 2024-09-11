@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -23,15 +24,19 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import com.chenxinzhi.ui.style.globalStyle
 import javafx.application.Platform
 import javafx.scene.media.Media
 import javafx.scene.media.MediaPlayer
+import javafx.scene.paint.Color.color
 import javafx.util.Duration
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.min
 import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.DurationUnit
 
 /**
  * @description
@@ -141,12 +146,45 @@ fun MediaPlayer(url: String = "") {
 
                         Text(
                             "告五人",
+                            overflow = TextOverflow.Ellipsis,
                             fontSize = globalStyle.current.mediaPlayerMusicSingerNameSize,
                             color = globalStyle.current.mediaPlayerMusicSingerNameColor,
                             textAlign = TextAlign.Center,
                             lineHeight = globalStyle.current.mediaPlayerMusicSingerNameSize
                         )
                     }
+                    Box(modifier = Modifier.height(5.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            currentTime.toInt().let {
+                                "${(it/60).toString().padStart(2, '0')}:${(it%60).toString().padStart(2, '0')}"
+                            },
+                            overflow = TextOverflow.Ellipsis,
+                            fontSize = globalStyle.current.durationFontSize,
+                            lineHeight = globalStyle.current.durationFontSize,
+                            color = globalStyle.current.durationColor,
+                            textAlign = TextAlign.Center
+                        )
+                        Box(Modifier.width(3.dp))
+                        Text(
+                            "/", fontSize = globalStyle.current.durationFontSize,
+                            color = globalStyle.current.durationColor,
+                            textAlign = TextAlign.Center,
+                            lineHeight = globalStyle.current.durationFontSize
+                        )
+                        Box(Modifier.width(3.dp))
+
+                        Text(
+                            duration.roundToInt().let {
+                                "${(it/60).toString().padStart(2, '0')}:${(it%60).toString().padStart(2, '0')}"
+                            },
+                            fontSize = globalStyle.current.durationFontSize,
+                            color = globalStyle.current.durationColor,
+                            textAlign = TextAlign.Center,
+                            lineHeight = globalStyle.current.durationFontSize
+                        )
+                    }
+
 
                 }
             }

@@ -40,7 +40,7 @@ fun FrameWindowScope.Content(
 
         //播放器
         Column(verticalArrangement = Arrangement.Bottom, modifier = Modifier.fillMaxSize()) {
-            MediaPlayer(javaClass.getResource("music/M500000SFLv10YFDuo.mp3")?.toURI().toString())
+            MediaPlayer(javaClass.getResource("/music/M500000SFLv10YFDuo.mp3")?.toURI().toString())
         }
 
 

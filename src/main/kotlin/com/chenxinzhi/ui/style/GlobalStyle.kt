@@ -46,4 +46,6 @@ object GlobalStyle {
     val mediaPlayerMusicSingerNameSize by mutableStateOf(11.sp)
     val mediaPlayerMusicSingerNameColor by mutableStateOf(Color(0xff939393))
     val mediaPlayerMusicSingerNameCheckColor by mutableStateOf(Color(0xff252525))
+    val durationColor by mutableStateOf(Color(0xff626262))
+    val durationFontSize by mutableStateOf(13.sp)
 }

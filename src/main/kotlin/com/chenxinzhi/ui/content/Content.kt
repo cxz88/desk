@@ -1,13 +1,16 @@
 package com.chenxinzhi.ui.content
 
+import androidx.compose.animation.slideIn
+import androidx.compose.animation.slideOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.FrameWindowScope
 import androidx.compose.ui.window.WindowState
@@ -25,7 +28,7 @@ import com.chenxinzhi.ui.topbar.Bar
 fun FrameWindowScope.Content(
     state: WindowState,
     exitApplication: () -> Unit,
-    content: @Composable FrameWindowScope.() -> Unit={}
+    content: @Composable FrameWindowScope.() -> Unit = {}
 ) {
     Box(
         modifier = Modifier.clip(shape = RoundedCornerShape(10.dp))
@@ -33,17 +36,22 @@ fun FrameWindowScope.Content(
                 color = GlobalStyle.backgroundColor
             ).fillMaxWidth()
     ) {
+        var show by remember { mutableStateOf(true) }
         Column {
             Bar(state, exitApplication)
-            content()
+            Box(modifier = Modifier.fillMaxSize()) {
+//                content()
+                androidx.compose.animation.AnimatedVisibility(show, enter =
+                slideIn { IntOffset(0, it.height) }, exit = slideOut {IntOffset(0, it.height)  }) {
+                    Box(modifier = Modifier.fillMaxSize().background(Color.Red)) {}
+                }
+            }
         }
 
         //播放器
         Column(verticalArrangement = Arrangement.Bottom, modifier = Modifier.fillMaxSize()) {
-            MediaPlayer(javaClass.getResource("/music/M500000SFLv10YFDuo.mp3")?.toURI().toString())
+            MediaPlayer(javaClass.getResource("/music/M500000SFLv10YFDuo.mp3")?.toURI().toString()) { show = !show }
         }
-
-
 
 
     }

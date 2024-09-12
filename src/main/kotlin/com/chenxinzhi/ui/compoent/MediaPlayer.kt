@@ -53,8 +53,9 @@ import kotlin.math.roundToInt
  * @author chenxinzhi
  * @date 2024/9/9
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun MediaPlayer(url: String = "") {
+fun MediaPlayer(url: String = "", showContent: () -> Unit) {
     var duration by remember { mutableStateOf(0f) }
     var isLoaded by remember { mutableStateOf(false) }
     var isPlaying by remember { mutableStateOf(false) }
@@ -155,6 +156,10 @@ fun MediaPlayer(url: String = "") {
                         .padding(top = 8.dp, start = 10.dp)
                         .size(42.dp)
                         .clip(RoundedCornerShape(6.dp))
+                        .pointerHoverIcon(PointerIcon.Hand)
+                        .onClick {
+                            showContent()
+                        }
                 )
                 Box(modifier = Modifier.width(10.dp))
                 Column {
@@ -278,6 +283,7 @@ fun MediaPlayer(url: String = "") {
                         )
                         val roundedPolygonPath = roundedPolygon.toComposePath()
                         onDrawBehind {
+
                             drawIntoCanvas {
                                 paint.color = musicControlColor
                                 it.drawCircle(

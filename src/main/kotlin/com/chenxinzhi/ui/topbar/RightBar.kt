@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -23,6 +24,7 @@ import com.chenxinzhi.ui.style.globalStyle
 fun RowScope.RightBar() {
     Row(
         modifier = Modifier.offset { IntOffset(0, -5.dp.roundToPx()) }.width(400.dp).fillMaxHeight()
+            .drawWithContent {  }
             .padding(bottom = 6.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.Bottom

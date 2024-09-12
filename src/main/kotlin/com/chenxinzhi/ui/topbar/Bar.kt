@@ -4,13 +4,11 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
@@ -28,57 +26,65 @@ import java.awt.event.WindowListener
 @Composable
 fun FrameWindowScope.Bar(
     state: WindowState,
-    exitApplication: () -> Unit
+    exitApplication: () -> Unit,
+    content: @Composable (RowScope.(
+    ) -> Unit)? = null
 ) {
     Box(
         modifier = Modifier.background(
             Color.Transparent
         ).fillMaxWidth()
-            .pointerInput(Unit) {
-                awaitPointerEventScope {
-                    var preXOnScreen = 0
-                    var preYOnScreen = 0
-                    var startX = 0
-                    var startY = 0
-                    var posX = 0.dp
-                    var posY = 0.dp
-                    while (true) {
-                        val awaitPointerEvent = awaitPointerEvent()
-                        if (awaitPointerEvent.changes[0].isConsumed) {
-                           continue
-                        }
-                        if (awaitPointerEvent.type == PointerEventType.Press) {
-                            val ne = awaitPointerEvent.nativeEvent
-                            if (ne is MouseEvent) {
-                                preXOnScreen = ne.xOnScreen
-                                preYOnScreen = ne.yOnScreen
-                                val component = ne.source as Component
-                                startX = component.x
-                                startY = component.y
-                                val position = state.position
-                                posX = position.x
-                                posY = position.y
-                            }
-                        } else if (awaitPointerEvent.type == PointerEventType.Move) {
-                            val nativeEvent = awaitPointerEvent.nativeEvent
-                            if (nativeEvent is MouseEvent) {
-                                if (nativeEvent.modifiersEx != MouseEvent.BUTTON1_DOWN_MASK) {
+            .composed {
+                if (content == null) {
+                    Modifier.pointerInput(Unit) {
+                        awaitPointerEventScope {
+                            var preXOnScreen = 0
+                            var preYOnScreen = 0
+                            var startX = 0
+                            var startY = 0
+                            var posX = 0.dp
+                            var posY = 0.dp
+                            while (true) {
+                                val awaitPointerEvent = awaitPointerEvent()
+                                if (awaitPointerEvent.changes[0].isConsumed) {
                                     continue
                                 }
-                                val xOnScreen = nativeEvent.xOnScreen
-                                val yOnScreen = nativeEvent.yOnScreen
-                                val xOffset = xOnScreen - preXOnScreen
-                                val yOffset = yOnScreen - preYOnScreen
-                                state.position =
-                                    WindowPosition(
-                                        posX + xOffset.sp.toDp() + startX.sp.toDp(),
-                                        posY + yOffset.sp.toDp() + startY.sp.toDp()
-                                    )
+                                if (awaitPointerEvent.type == PointerEventType.Press) {
+                                    val ne = awaitPointerEvent.nativeEvent
+                                    if (ne is MouseEvent) {
+                                        preXOnScreen = ne.xOnScreen
+                                        preYOnScreen = ne.yOnScreen
+                                        val component = ne.source as Component
+                                        startX = component.x
+                                        startY = component.y
+                                        val position = state.position
+                                        posX = position.x
+                                        posY = position.y
+                                    }
+                                } else if (awaitPointerEvent.type == PointerEventType.Move) {
+                                    val nativeEvent = awaitPointerEvent.nativeEvent
+                                    if (nativeEvent is MouseEvent) {
+                                        if (nativeEvent.modifiersEx != MouseEvent.BUTTON1_DOWN_MASK) {
+                                            continue
+                                        }
+                                        val xOnScreen = nativeEvent.xOnScreen
+                                        val yOnScreen = nativeEvent.yOnScreen
+                                        val xOffset = xOnScreen - preXOnScreen
+                                        val yOffset = yOnScreen - preYOnScreen
+                                        state.position =
+                                            WindowPosition(
+                                                posX + xOffset.sp.toDp() + startX.sp.toDp(),
+                                                posY + yOffset.sp.toDp() + startY.sp.toDp()
+                                            )
+                                    }
+
+
+                                }
                             }
-
-
                         }
                     }
+                } else {
+                    Modifier
                 }
             }
             .height(50.dp)
@@ -133,7 +139,9 @@ fun FrameWindowScope.Bar(
         )
         Row {
             LeftBar(close, m, exitApplication, hover, minColor)
-            RightBar()
+            content?.let {
+                it()
+            }
         }
 
 

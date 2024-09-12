@@ -17,6 +17,7 @@ import androidx.compose.ui.window.WindowState
 import com.chenxinzhi.ui.compoent.MediaPlayer
 import com.chenxinzhi.ui.style.GlobalStyle
 import com.chenxinzhi.ui.topbar.Bar
+import com.chenxinzhi.ui.topbar.RightBar
 
 /**
  * @description
@@ -38,11 +39,18 @@ fun FrameWindowScope.Content(
     ) {
         var show by remember { mutableStateOf(true) }
         Column {
-            Bar(state, exitApplication)
+            Box {
+                Bar(state, exitApplication)
+                Bar(state, exitApplication) {
+
+                        RightBar()
+
+                }
+            }
             Box(modifier = Modifier.fillMaxSize()) {
 //                content()
                 androidx.compose.animation.AnimatedVisibility(show, enter =
-                slideIn { IntOffset(0, it.height) }, exit = slideOut {IntOffset(0, it.height)  }) {
+                slideIn { IntOffset(0, it.height) }, exit = slideOut { IntOffset(0, it.height) }) {
                     Box(modifier = Modifier.fillMaxSize().background(Color.Red)) {}
                 }
             }

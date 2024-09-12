@@ -227,7 +227,7 @@ fun MediaPlayer(url: String = "") {
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxSize()
             ) {
-                Canvas(Modifier.size(20.dp)){
+                Canvas(Modifier.size(20.dp).pointerHoverIcon(PointerIcon.Hand)){
                     val roundedPolygon = RoundedPolygon(
                         numVertices = 3,
                         radius = size.minDimension / 2f,
@@ -358,7 +358,7 @@ fun MediaPlayer(url: String = "") {
                     }
                 )
                 Box(modifier = Modifier.width(15.dp))
-                Canvas(Modifier.size(20.dp)){
+                Canvas(Modifier.size(20.dp).pointerHoverIcon(PointerIcon.Hand)){
                     val roundedPolygon = RoundedPolygon(
                         numVertices = 3,
                         radius = size.minDimension / 2f,

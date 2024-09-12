@@ -75,6 +75,7 @@ fun SwipeContent(imageList: List<String>, state: SwipeState) {
                     )
                     val paddingV by animateDpAsState(if (nowIndex == index) 0.dp else 25.dp, tween(state.duration))
                     val widthV by animateDpAsState(if (nowIndex == index) 550.dp else 400.dp, tween(state.duration))
+
                     Image(
                         painterResource(item),
                         modifier = Modifier

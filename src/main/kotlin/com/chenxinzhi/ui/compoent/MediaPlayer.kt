@@ -13,10 +13,19 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -24,19 +33,20 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
+import androidx.graphics.shapes.CornerRounding
+import androidx.graphics.shapes.RoundedPolygon
 import com.chenxinzhi.ui.style.globalStyle
+import com.chenxinzhi.utils.toComposePath
 import javafx.application.Platform
 import javafx.scene.media.Media
 import javafx.scene.media.MediaPlayer
-import javafx.scene.paint.Color.color
 import javafx.util.Duration
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.jetbrains.skia.IRect
+import org.jetbrains.skia.Region
 import kotlin.math.min
 import kotlin.math.roundToInt
-import kotlin.time.Duration.Companion.seconds
-import kotlin.time.DurationUnit
 
 /**
  * @description
@@ -95,11 +105,23 @@ fun MediaPlayer(url: String = "") {
             mediaPlayerState?.dispose()
         }
     }
-
+    var showPaint by remember { mutableStateOf(false) }
     Box(
         modifier = Modifier.background(globalStyle.current.mediaPlayerBackgroundColor).fillMaxWidth()
-            .height(62.dp)
+            .height(62.dp).pointerInput(Unit) {
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent()
+                        if (event.changes[0].isConsumed) {
+                            continue;
+                        }
+                        showPaint = false
+                    }
+                }
+            }
     ) {
+        val region = remember { Region() }
+        var isPlay by remember { mutableStateOf(false) }
         MusicLinearProgressIndicator(progress) {
             //将当前的时间加上对应的百分比
             rememberCoroutineScope.launch {
@@ -112,6 +134,17 @@ fun MediaPlayer(url: String = "") {
             }
 
         }
+        if (isPlay) {
+            mediaPlayerState?.pause()
+        } else {
+            mediaPlayerState?.play()
+        }
+        val paint = remember {
+            Paint().apply {
+                isAntiAlias = true
+            }
+        }
+        val musicControlColor = globalStyle.current.musicControlColor
         Box(modifier = Modifier.padding(top = 2.dp)) {
             Row {
                 Image(
@@ -157,7 +190,7 @@ fun MediaPlayer(url: String = "") {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             currentTime.toInt().let {
-                                "${(it/60).toString().padStart(2, '0')}:${(it%60).toString().padStart(2, '0')}"
+                                "${(it / 60).toString().padStart(2, '0')}:${(it % 60).toString().padStart(2, '0')}"
                             },
                             overflow = TextOverflow.Ellipsis,
                             fontSize = globalStyle.current.durationFontSize,
@@ -176,7 +209,7 @@ fun MediaPlayer(url: String = "") {
 
                         Text(
                             duration.roundToInt().let {
-                                "${(it/60).toString().padStart(2, '0')}:${(it%60).toString().padStart(2, '0')}"
+                                "${(it / 60).toString().padStart(2, '0')}:${(it % 60).toString().padStart(2, '0')}"
                             },
                             fontSize = globalStyle.current.durationFontSize,
                             color = globalStyle.current.durationColor,
@@ -187,6 +220,164 @@ fun MediaPlayer(url: String = "") {
 
 
                 }
+            }
+            //播放按钮
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Canvas(Modifier.size(20.dp)){
+                    val roundedPolygon = RoundedPolygon(
+                        numVertices = 3,
+                        radius = size.minDimension / 2f,
+                        centerX = size.width / 2,
+                        centerY = size.height / 2,
+                        //每个三角形的角的内圆形弧度太大会导致
+                        rounding = CornerRounding(
+                            size.minDimension / 10,
+                            smoothing = 0.1f
+                        )
+                    )
+                    val roundedPolygonPath = roundedPolygon.toComposePath()
+                    rotate(180f){
+                        drawPath(roundedPolygonPath, musicControlColor)
+                    }
+                    drawLine(musicControlColor, start = Offset(0f,4f), end = Offset(0f,size.height-4f), cap = StrokeCap.Round, strokeWidth = 2f)
+
+                }
+                Box(modifier = Modifier.width(15.dp))
+                Box(modifier = Modifier
+                    .composed {
+                        if (showPaint) {
+                            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                        } else {
+                            Modifier
+                        }
+                    }
+                    .size(41.dp)
+                    .drawWithCache {
+                        val path = Path()
+                        path.lineTo(0f, 50f)
+                        path.addOval(Rect(Offset.Zero, size))
+                        region.setPath(path.asSkiaPath(), Region().apply {
+                            setRect(IRect.makeLTRB(0, 0, size.width.roundToInt(), size.height.roundToInt()))
+                        }
+                        )
+                        val roundedPolygon = RoundedPolygon(
+                            numVertices = 3,
+                            radius = size.minDimension / 4.1f,
+                            centerX = size.width / 2,
+                            centerY = size.height / 2,
+                            //每个三角形的角的内圆形弧度太大会导致
+                            rounding = CornerRounding(
+                                size.minDimension / 30,
+                                smoothing = 0.1f
+                            )
+
+                        )
+                        val roundedPolygonPath = roundedPolygon.toComposePath()
+                        onDrawBehind {
+                            drawIntoCanvas {
+                                paint.color = musicControlColor
+                                it.drawCircle(
+                                    Offset(size.width / 2, size.height / 2),
+                                    radius = size.minDimension / 2f,
+                                    paint = paint
+                                )
+                                if (isPlay) {
+                                    paint.color = Color.White
+                                    it.drawPath(roundedPolygonPath, paint = paint)
+                                } else {
+                                    drawLine(
+                                        Color.White,
+                                        Offset(17.5f, 13.5f),
+                                        Offset(17.5f, size.height - 13.5f),
+                                        cap = StrokeCap.Round,
+                                        strokeWidth = 2.8f
+                                    )
+                                    drawLine(
+                                        Color.White,
+                                        Offset(size.width - 17.5f, 13.5f),
+                                        Offset(size.width - 17.5f, size.height - 13.5f),
+                                        cap = StrokeCap.Round,
+                                        strokeWidth = 2.8f
+                                    )
+                                }
+
+                            }
+
+
+                        }
+
+
+                    }.pointerInput(Unit) {
+                        awaitPointerEventScope {
+                            while (true) {
+                                val event = awaitPointerEvent()
+                                val pointerInputChange = event.changes[0]
+                                pointerInputChange.consume()
+                                val contains = region.contains(
+                                    pointerInputChange.position.x.roundToInt(),
+                                    pointerInputChange.position.y.roundToInt()
+                                )
+                                showPaint = contains
+                                if (!contains) {
+                                    continue
+                                }
+                                if (event.type != PointerEventType.Press) {
+                                    continue
+                                }
+                                var b = true
+                                while (b) {
+                                    val e = awaitPointerEvent()
+                                   e.changes.forEach {
+                                       it.consume()
+                                   }
+                                    if (e.type == PointerEventType.Move) {
+                                        //判断是否超过范围
+                                        e.changes.forEach {
+
+                                            if (!region.contains(
+                                                    it.position.x.roundToInt(),
+                                                    it.position.y.roundToInt()
+                                                )
+                                            ) {
+                                                b = false
+                                                return@forEach
+                                            }
+                                        }
+                                    } else if (e.type == PointerEventType.Release) {
+                                        //执行回掉并退出
+                                        isPlay = !isPlay
+                                        b = false
+                                    }
+                                }
+                            }
+                        }
+                    }
+                )
+                Box(modifier = Modifier.width(15.dp))
+                Canvas(Modifier.size(20.dp)){
+                    val roundedPolygon = RoundedPolygon(
+                        numVertices = 3,
+                        radius = size.minDimension / 2f,
+                        centerX = size.width / 2,
+                        centerY = size.height / 2,
+                        //每个三角形的角的内圆形弧度太大会导致
+                        rounding = CornerRounding(
+                            size.minDimension / 10,
+                            smoothing = 0.1f
+                        )
+                    )
+                    val roundedPolygonPath = roundedPolygon.toComposePath()
+
+                        drawPath(roundedPolygonPath, musicControlColor)
+
+                    drawLine(musicControlColor, start = Offset(size.width,4f), end = Offset(size.width,size.height-4f), cap = StrokeCap.Round, strokeWidth = 2f)
+
+                }
+
             }
         }
     }

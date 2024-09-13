@@ -55,7 +55,13 @@ import kotlin.math.roundToInt
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun MediaPlayer(url: String = "", showContent: () -> Unit) {
+fun MediaPlayer(
+    url: String = "",
+    isPlayCallback: (Boolean) -> Unit,
+    processCallback: (Float) -> Unit,
+    showContent: () -> Unit,
+
+) {
     var duration by remember { mutableStateOf(0f) }
     var isLoaded by remember { mutableStateOf(false) }
     var isPlaying by remember { mutableStateOf(false) }
@@ -70,6 +76,9 @@ fun MediaPlayer(url: String = "", showContent: () -> Unit) {
                 currentTime / duration
             }
         }
+    }
+    remember(progress) {
+        processCallback(progress)
     }
     val rememberCoroutineScope = rememberCoroutineScope()
     var isWait by remember { mutableStateOf(false) }
@@ -122,7 +131,7 @@ fun MediaPlayer(url: String = "", showContent: () -> Unit) {
             }
     ) {
         val region = remember { Region() }
-        var isPlay by remember { mutableStateOf(false) }
+        var isPause by remember { mutableStateOf(false) }
         MusicLinearProgressIndicator(progress) {
             //将当前的时间加上对应的百分比
             rememberCoroutineScope.launch {
@@ -135,10 +144,13 @@ fun MediaPlayer(url: String = "", showContent: () -> Unit) {
             }
 
         }
-        if (isPlay) {
+        if (isPause) {
             mediaPlayerState?.pause()
         } else {
             mediaPlayerState?.play()
+        }
+        remember(isPause) {
+            isPlayCallback(!isPause)
         }
         val paint = remember {
             Paint().apply {
@@ -232,7 +244,7 @@ fun MediaPlayer(url: String = "", showContent: () -> Unit) {
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxSize()
             ) {
-                Canvas(Modifier.size(20.dp).pointerHoverIcon(PointerIcon.Hand)){
+                Canvas(Modifier.size(20.dp).pointerHoverIcon(PointerIcon.Hand)) {
                     val roundedPolygon = RoundedPolygon(
                         numVertices = 3,
                         radius = size.minDimension / 2f,
@@ -245,10 +257,16 @@ fun MediaPlayer(url: String = "", showContent: () -> Unit) {
                         )
                     )
                     val roundedPolygonPath = roundedPolygon.toComposePath()
-                    rotate(180f){
+                    rotate(180f) {
                         drawPath(roundedPolygonPath, musicControlColor)
                     }
-                    drawLine(musicControlColor, start = Offset(0f,4f), end = Offset(0f,size.height-4f), cap = StrokeCap.Round, strokeWidth = 2f)
+                    drawLine(
+                        musicControlColor,
+                        start = Offset(0f, 4f),
+                        end = Offset(0f, size.height - 4f),
+                        cap = StrokeCap.Round,
+                        strokeWidth = 2f
+                    )
 
                 }
                 Box(modifier = Modifier.width(15.dp))
@@ -291,7 +309,7 @@ fun MediaPlayer(url: String = "", showContent: () -> Unit) {
                                     radius = size.minDimension / 2f,
                                     paint = paint
                                 )
-                                if (isPlay) {
+                                if (isPause) {
                                     paint.color = Color.White
                                     it.drawPath(roundedPolygonPath, paint = paint)
                                 } else {
@@ -337,9 +355,9 @@ fun MediaPlayer(url: String = "", showContent: () -> Unit) {
                                 var b = true
                                 while (b) {
                                     val e = awaitPointerEvent()
-                                   e.changes.forEach {
-                                       it.consume()
-                                   }
+                                    e.changes.forEach {
+                                        it.consume()
+                                    }
                                     if (e.type == PointerEventType.Move) {
                                         //判断是否超过范围
                                         e.changes.forEach {
@@ -355,7 +373,7 @@ fun MediaPlayer(url: String = "", showContent: () -> Unit) {
                                         }
                                     } else if (e.type == PointerEventType.Release) {
                                         //执行回掉并退出
-                                        isPlay = !isPlay
+                                        isPause = !isPause
                                         b = false
                                     }
                                 }
@@ -364,7 +382,7 @@ fun MediaPlayer(url: String = "", showContent: () -> Unit) {
                     }
                 )
                 Box(modifier = Modifier.width(15.dp))
-                Canvas(Modifier.size(20.dp).pointerHoverIcon(PointerIcon.Hand)){
+                Canvas(Modifier.size(20.dp).pointerHoverIcon(PointerIcon.Hand)) {
                     val roundedPolygon = RoundedPolygon(
                         numVertices = 3,
                         radius = size.minDimension / 2f,
@@ -378,9 +396,15 @@ fun MediaPlayer(url: String = "", showContent: () -> Unit) {
                     )
                     val roundedPolygonPath = roundedPolygon.toComposePath()
 
-                        drawPath(roundedPolygonPath, musicControlColor)
+                    drawPath(roundedPolygonPath, musicControlColor)
 
-                    drawLine(musicControlColor, start = Offset(size.width,4f), end = Offset(size.width,size.height-4f), cap = StrokeCap.Round, strokeWidth = 2f)
+                    drawLine(
+                        musicControlColor,
+                        start = Offset(size.width, 4f),
+                        end = Offset(size.width, size.height - 4f),
+                        cap = StrokeCap.Round,
+                        strokeWidth = 2f
+                    )
 
                 }
 

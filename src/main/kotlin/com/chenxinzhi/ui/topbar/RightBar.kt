@@ -13,7 +13,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -21,41 +20,8 @@ import com.chenxinzhi.ui.style.GlobalStyle
 import com.chenxinzhi.ui.style.globalStyle
 
 @Composable
-fun RowScope.RightBar() {
-    Row(
-        modifier = Modifier.offset { IntOffset(0, -5.dp.roundToPx()) }.width(400.dp).fillMaxHeight()
-            .drawWithContent {  }
-            .padding(bottom = 6.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalAlignment = Alignment.Bottom
-    ) {
-        Text(
-            "个性推荐",
-            color = GlobalStyle.textCheckColor,
-            fontSize = GlobalStyle.defaultFontSize
-
-        )
-        Text(
-            "歌单",
-            color = GlobalStyle.textUnCheckColor,
-            fontSize = GlobalStyle.defaultFontSize
-        )
-        Text(
-            "排行榜",
-            color = GlobalStyle.textUnCheckColor,
-            fontSize = GlobalStyle.defaultFontSize
-        )
-        Text(
-            "歌手",
-            color = GlobalStyle.textUnCheckColor,
-            fontSize = GlobalStyle.defaultFontSize
-        )
-        Text(
-            "最新音乐",
-            color = GlobalStyle.textUnCheckColor,
-            fontSize = GlobalStyle.defaultFontSize
-        )
-    }
+fun RowScope.RightBar(content: @Composable () -> Unit) {
+    content()
     Row(
         modifier = Modifier.offset { IntOffset(0, 0) }.weight(1f).fillMaxHeight().padding(bottom = 6.dp),
         horizontalArrangement = Arrangement.End,

@@ -1,15 +1,29 @@
 package com.chenxinzhi.ui.content
 
+import androidx.compose.animation.core.*
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideIn
 import androidx.compose.animation.slideOut
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Icon
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.FrameWindowScope
@@ -38,27 +52,170 @@ fun FrameWindowScope.Content(
             ).fillMaxWidth()
     ) {
         var show by remember { mutableStateOf(true) }
+        GlobalStyle.backgroundTopLeftColorChange = if (show) {
+            Color(0xff2b2b2b)
+        } else {
+            Color(0xff2d2d2d)
+        }
+        var process by remember { mutableStateOf(0f) }
+        val conRate by remember { derivedStateOf {
+            13*process
+        } }
+
+        var isPlay by remember { mutableStateOf(false) }
+        val conRateAni by animateFloatAsState(if (isPlay) conRate else -40f)
         Column {
             Box {
-                Bar(state, exitApplication)
-                Bar(state, exitApplication) {
+                Bar(state, exitApplication, rightContent = {
+                    RightBar {
+                        androidx.compose.animation.AnimatedVisibility(
+                            !show, enter =
+                            fadeIn(), exit = fadeOut()
+                        ) {
+                            Row(
+                                modifier = Modifier.offset { IntOffset(0, -5.dp.roundToPx()) }.width(400.dp)
+                                    .fillMaxHeight()
+                                    .padding(bottom = 6.dp),
+                                horizontalArrangement = Arrangement.SpaceEvenly,
+                                verticalAlignment = Alignment.Bottom
+                            ) {
+                                Text(
+                                    "个性推荐",
+                                    color = GlobalStyle.textCheckColor,
+                                    fontSize = GlobalStyle.defaultFontSize
 
-                        RightBar()
+                                )
+                                Text(
+                                    "歌单",
+                                    color = GlobalStyle.textUnCheckColor,
+                                    fontSize = GlobalStyle.defaultFontSize
+                                )
+                                Text(
+                                    "排行榜",
+                                    color = GlobalStyle.textUnCheckColor,
+                                    fontSize = GlobalStyle.defaultFontSize
+                                )
+                                Text(
+                                    "歌手",
+                                    color = GlobalStyle.textUnCheckColor,
+                                    fontSize = GlobalStyle.defaultFontSize
+                                )
+                                Text(
+                                    "最新音乐",
+                                    color = GlobalStyle.textUnCheckColor,
+                                    fontSize = GlobalStyle.defaultFontSize
+                                )
+                            }
+                        }
+
+                    }
+                }
+                ) {
+                    androidx.compose.animation.AnimatedVisibility(
+                        !show, enter =
+                        fadeIn(), exit = fadeOut()
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.Bottom,
+                            modifier = Modifier.weight(1f).fillMaxHeight()
+                        ) {
+                            Icon(
+                                painterResource("image/ic_back.webp"),
+                                contentDescription = null,
+                                tint = Color(0xFFaeaeae),
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Icon(
+                                painterResource("image/ic_more.webp"),
+                                contentDescription = null,
+                                tint = Color(0xFFaeaeae),
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
 
                 }
             }
+
             Box(modifier = Modifier.fillMaxSize()) {
-//                content()
+                content()
                 androidx.compose.animation.AnimatedVisibility(show, enter =
                 slideIn { IntOffset(0, it.height) }, exit = slideOut { IntOffset(0, it.height) }) {
-                    Box(modifier = Modifier.fillMaxSize().background(Color.Red)) {}
+                    BoxWithConstraints(modifier = Modifier.fillMaxSize().background(GlobalStyle.backgroundColor)) {
+                        val width = with(LocalDensity.current) {
+                            constraints.maxWidth.toDp()
+                        }
+                        val height = with(LocalDensity.current) {
+                            constraints.maxHeight.toDp()
+                        }
+                        val ani = remember {
+                            Animatable(0f, Float.VectorConverter)
+                        }
+                        LaunchedEffect(isPlay) {
+                            if (isPlay) {
+                                ani.animateTo(
+                                    ani.value + 360f,
+                                    animationSpec = infiniteRepeatable(tween(10000, easing = LinearEasing))
+                                )
+                            }
+                        }
+                        LazyColumn {
+                            item {
+                                Row(modifier = Modifier.size(width, height)) {
+                                    Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                                        Box(
+                                            modifier = Modifier.fillMaxHeight().offset(y = (-50).dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Image(painterResource("image/ic_disk_around.webp"),
+                                                contentDescription = null,
+                                                modifier = Modifier
+                                                    .shadow(10.dp, shape = CircleShape)
+                                                    .graphicsLayer {
+                                                        rotationZ = ani.value % 360f
+                                                    }
+                                                    .size(320.dp)
+
+
+                                            )
+                                        }
+                                        Box(
+                                            modifier = Modifier.fillMaxHeight(),
+                                            contentAlignment = Alignment.TopCenter
+                                        ) {
+                                            Image(painterResource("image/ic_play_neddle.webp"),
+                                                contentDescription = null,
+                                                modifier = Modifier.size(160.dp)
+
+                                                    .offset(x = 30.dp)
+                                                    .graphicsLayer {
+                                                        transformOrigin = TransformOrigin(0.280f, 0.12f)
+                                                        rotationZ = conRateAni
+                                                    }
+
+                                            )
+
+                                        }
+                                    }
+                                    Box(modifier = Modifier.weight(1f).fillMaxHeight()) {
+
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
 
         //播放器
         Column(verticalArrangement = Arrangement.Bottom, modifier = Modifier.fillMaxSize()) {
-            MediaPlayer(javaClass.getResource("/music/M500000SFLv10YFDuo.mp3")?.toURI().toString()) { show = !show }
+            MediaPlayer(javaClass.getResource("/music/M500000SFLv10YFDuo.mp3")?.toURI().toString(), isPlayCallback = {
+                isPlay = it
+            }, processCallback = {
+                process = it
+            }) { show = !show }
         }
 
 

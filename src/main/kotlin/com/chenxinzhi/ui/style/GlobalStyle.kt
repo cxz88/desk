@@ -1,10 +1,8 @@
 package com.chenxinzhi.ui.style
 
 
-import androidx.compose.runtime.compositionLocalOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
 
@@ -18,7 +16,11 @@ val globalStyle = compositionLocalOf { GlobalStyle }
 
 object GlobalStyle {
     var backgroundColor by mutableStateOf(Color(0xff2b2b2b))
-    var backgroundTopLeftColor by mutableStateOf(Color(0xff2d2d2d))
+    var backgroundTopLeftColorChange by mutableStateOf(Color(0xff2d2d2d))
+
+    val backgroundTopLeftColor
+        @Composable
+        get()=animateColorAsState(backgroundTopLeftColorChange)
     var textUnCheckColor by mutableStateOf(Color(0xff878787))
     var textCheckColor by mutableStateOf(Color(0xffFFFFFF))
     val defaultFontSize by mutableStateOf( 14.sp)
@@ -47,5 +49,6 @@ object GlobalStyle {
     val mediaPlayerMusicSingerNameCheckColor by mutableStateOf(Color(0xff252525))
     val durationColor by mutableStateOf(Color(0xff626262))
     val musicControlColor by mutableStateOf(Color(0xffd33a31))
+    val CoverShadow by mutableStateOf(Color(0xff282e2d))
     val durationFontSize by mutableStateOf(13.sp)
 }

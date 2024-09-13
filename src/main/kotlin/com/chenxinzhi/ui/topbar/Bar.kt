@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
@@ -27,16 +26,16 @@ import java.awt.event.WindowListener
 fun FrameWindowScope.Bar(
     state: WindowState,
     exitApplication: () -> Unit,
-    content: @Composable (RowScope.(
+    rightContent: @Composable (RowScope.(
+    ) -> Unit)? = null,
+    leftContent: @Composable (RowScope.(
     ) -> Unit)? = null
 ) {
     Box(
         modifier = Modifier.background(
             Color.Transparent
         ).fillMaxWidth()
-            .composed {
-                if (content == null) {
-                    Modifier.pointerInput(Unit) {
+            .pointerInput(Unit) {
                         awaitPointerEventScope {
                             var preXOnScreen = 0
                             var preYOnScreen = 0
@@ -82,10 +81,8 @@ fun FrameWindowScope.Bar(
                                 }
                             }
                         }
-                    }
-                } else {
-                    Modifier
-                }
+
+
             }
             .height(50.dp)
     ) {
@@ -138,8 +135,12 @@ fun FrameWindowScope.Bar(
             }
         )
         Row {
-            LeftBar(close, m, exitApplication, hover, minColor)
-            content?.let {
+            LeftBar(close, m, exitApplication, hover, minColor) {
+                leftContent?.let {
+                    it()
+                }
+            }
+            rightContent?.let {
                 it()
             }
         }

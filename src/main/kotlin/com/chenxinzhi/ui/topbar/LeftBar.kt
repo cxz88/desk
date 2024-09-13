@@ -15,7 +15,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.FrameWindowScope
 import com.chenxinzhi.ui.style.GlobalStyle
@@ -26,11 +25,12 @@ fun FrameWindowScope.LeftBar(
     mutableInteractionSource: MutableInteractionSource,
     exitApplication: () -> Unit,
     isHover: Boolean,
-    minColor: Color
+    minColor: Color,
+    content:@Composable () -> Unit
 ) {
     Row(
         modifier = Modifier.fillMaxHeight().width(200.dp)
-            .background(GlobalStyle.backgroundTopLeftColor).padding(
+            .background(GlobalStyle.backgroundTopLeftColor.value).padding(
                 end = 10.dp, bottom = 10.dp
             ).padding(bottom = 6.dp)
     ) {
@@ -84,24 +84,8 @@ fun FrameWindowScope.LeftBar(
             }
         }
         Box(modifier = Modifier.width(40.dp))
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.Bottom,
-            modifier = Modifier.weight(1f).fillMaxHeight()
-        ) {
-            Icon(
-                painterResource("image/ic_back.webp"),
-                contentDescription = null,
-                tint = Color(0xFFaeaeae),
-                modifier = Modifier.size(16.dp)
-            )
-            Icon(
-                painterResource("image/ic_more.webp"),
-                contentDescription = null,
-                tint = Color(0xFFaeaeae),
-                modifier = Modifier.size(16.dp)
-            )
-        }
+        content()
+
 
     }
 }

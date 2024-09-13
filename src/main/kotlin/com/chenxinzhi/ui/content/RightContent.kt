@@ -16,9 +16,6 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.BlurEffect
-import androidx.compose.ui.graphics.TileMode
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import com.chenxinzhi.ui.Swipe
 import com.chenxinzhi.ui.style.globalStyle
@@ -32,10 +29,12 @@ fun RightContent() {
                 Surface(
                     modifier = Modifier
                         .background(globalStyle.current.contentBackgroundColor)
-                        .padding(horizontal = 20.dp).graphicsLayer {
-                            renderEffect= BlurEffect(50f,50f, TileMode.Decal)
-                            clip = true
-                        },
+                        .padding(horizontal = 20.dp)
+//                        .graphicsLayer {
+//                            renderEffect= BlurEffect(11f,11f, TileMode.Repeated)
+//                            clip = true
+//                        }
+            ,
                     color = globalStyle.current.contentBackgroundColor
                 ) {
                     Swipe()

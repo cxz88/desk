@@ -21,7 +21,7 @@ dependencies {
     // compose.desktop.currentOs should be used in launcher-sourceSet
     // (in a separate module for demo project and in testMain).
     // With compose.desktop.common you will also lose @Preview functionality
-    implementation("io.github.khubaibkhan4:mediaplayer-kmp:1.0.9")
+    implementation("androidx.graphics:graphics-shapes-desktop:1.0.1")
     val fxSuffix = when (osdetector.classifier) {
         "linux-x86_64" -> "linux"
         "linux-aarch_64" -> "linux-aarch64"

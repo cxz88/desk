@@ -145,13 +145,14 @@ fun FrameWindowScope.Content(
                 }
                 ) {
                     androidx.compose.animation.AnimatedVisibility(
-                        !show, enter =
+
+                        !show, Modifier.weight(1f).fillMaxHeight(), enter =
                         fadeIn(), exit = fadeOut()
                     ) {
                         Row(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.Bottom,
-                            modifier = Modifier.weight(1f).fillMaxHeight()
+                            modifier = Modifier.fillMaxWidth()
                         ) {
                             Icon(
                                 painterResource("image/ic_back.webp"),

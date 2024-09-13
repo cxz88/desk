@@ -2,9 +2,7 @@ package com.chenxinzhi.ui.content
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -201,7 +199,6 @@ fun FrameWindowScope.Content(
                                     .lastIndex
                             }
                         }
-
                         LazyColumn {
                             item {
                                 Row(modifier = Modifier.size(width, height)) {
@@ -254,9 +251,11 @@ fun FrameWindowScope.Content(
                                         }
                                     }
                                     val stateList = rememberLazyListState()
+                                    val sa = rememberScrollbarAdapter(stateList)
                                     Box(
                                         modifier = Modifier.weight(1f).fillMaxHeight()
                                             .padding(vertical = 150.dp)
+                                            .padding(end = 150.dp)
                                     ) {
                                         val brushTop = Brush.verticalGradient(
                                             listOf(
@@ -283,7 +282,7 @@ fun FrameWindowScope.Content(
                                                 }, state = stateList
                                         ) {
                                             item {
-                                                Spacer(modifier = Modifier.height(100.dp))
+                                                Spacer(modifier = Modifier.height(80.dp))
                                             }
                                             items(lycList.size, key = {
                                                 lycList[it].first
@@ -295,11 +294,25 @@ fun FrameWindowScope.Content(
                                                 Spacer(modifier = Modifier.height(8.dp))
                                             }
                                             item {
-                                                Spacer(modifier = Modifier.height(100.dp))
+                                                Spacer(modifier = Modifier.height(80.dp))
                                             }
                                         }
+                                        VerticalScrollbar(
+                                            modifier = Modifier.align(Alignment.CenterEnd),
+                                            adapter = sa,
+                                            style = ScrollbarStyle(
+                                                minimalHeight = 8.dp,
+                                                thickness = 5.dp,
+                                                shape = RoundedCornerShape(4.dp),
+                                                hoverDurationMillis = 300,
+                                                unhoverColor = globalStyle.current.scrollColor,
+                                                hoverColor = globalStyle.current.scrollCheckColor
+                                            )
+                                        )
                                         LaunchedEffect(lycIndex) {
-                                            stateList.animateScrollToItem(max(0, lycIndex - 5))
+                                            if (!stateList.isScrollInProgress) {
+                                                stateList.animateScrollToItem(max(0, lycIndex - 3))
+                                            }
                                         }
 
                                     }

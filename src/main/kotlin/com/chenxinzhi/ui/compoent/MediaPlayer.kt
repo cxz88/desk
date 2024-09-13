@@ -319,17 +319,17 @@ fun MediaPlayer(
                                 } else {
                                     drawLine(
                                         Color.White,
-                                        Offset(17.5f, 13.5f),
-                                        Offset(17.5f, size.height - 13.5f),
+                                        Offset(17.5.dp.toPx(), 13.5.dp.toPx()),
+                                        Offset(17.5.dp.toPx(), size.height - 13.5.dp.toPx()),
                                         cap = StrokeCap.Round,
-                                        strokeWidth = 2.8f
+                                        strokeWidth = 2.8.dp.toPx()
                                     )
                                     drawLine(
                                         Color.White,
-                                        Offset(size.width - 17.5f, 13.5f),
-                                        Offset(size.width - 17.5f, size.height - 13.5f),
+                                        Offset(size.width - 17.5.dp.toPx(), 13.5.dp.toPx()),
+                                        Offset(size.width - 17.5.dp.toPx(), size.height - 13.5.dp.toPx()),
                                         cap = StrokeCap.Round,
-                                        strokeWidth = 2.8f
+                                        strokeWidth = 2.8.dp.toPx()
                                     )
                                 }
 

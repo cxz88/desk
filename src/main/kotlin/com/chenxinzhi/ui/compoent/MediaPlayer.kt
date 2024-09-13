@@ -59,6 +59,7 @@ fun MediaPlayer(
     url: String = "",
     isPlayCallback: (Boolean) -> Unit,
     processCallback: (Float) -> Unit,
+    currentTimeChange: (Float) -> Unit,
     showContent: () -> Unit,
 
 ) {
@@ -79,6 +80,9 @@ fun MediaPlayer(
     }
     remember(progress) {
         processCallback(progress)
+    }
+    remember(currentTime) {
+        currentTimeChange(currentTime)
     }
     val rememberCoroutineScope = rememberCoroutineScope()
     var isWait by remember { mutableStateOf(false) }

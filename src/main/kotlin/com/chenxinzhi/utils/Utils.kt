@@ -9,6 +9,17 @@ import androidx.graphics.shapes.RoundedPolygon
  * @author chenxinzhi
  * @date 2024/9/5
  */
+
+fun convertToSeconds(time: String): Double {
+    val parts = time.split(":")
+    val minutes = parts[0].toInt()
+    val secondsAndMillis = parts[1].split(".")
+    val seconds = secondsAndMillis[0].toInt()
+    val millis = secondsAndMillis[1].toInt()
+
+    // 将分钟转换为秒，并加上秒和毫秒（毫秒转换为秒）
+    return minutes * 60 + seconds + millis / 1000.0
+}
 fun RoundedPolygon.toComposePath() =
     Path().apply { pathFromCubic(this, cubics) }
 

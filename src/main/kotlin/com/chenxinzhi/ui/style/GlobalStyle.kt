@@ -50,5 +50,9 @@ object GlobalStyle {
     val durationColor by mutableStateOf(Color(0xff626262))
     val musicControlColor by mutableStateOf(Color(0xffd33a31))
     val CoverShadow by mutableStateOf(Color(0xff282e2d))
+    val lycColor by mutableStateOf(Color(0xff8b8b8b))
+    val lycFontSize by mutableStateOf(16f)
+    val lycCheckColor by mutableStateOf(Color(0xffffffff))
+    val lycFontCheckSize by mutableStateOf(17f)
     val durationFontSize by mutableStateOf(13.sp)
 }

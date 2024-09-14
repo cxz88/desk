@@ -9,6 +9,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,6 +18,7 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
@@ -33,8 +35,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.graphics.shapes.CornerRounding
 import androidx.graphics.shapes.RoundedPolygon
+import com.chenxinzhi.sqlservice.FuncEnum
+import com.chenxinzhi.sqlservice.getByKey
+import com.chenxinzhi.sqlservice.updateByKey
 import com.chenxinzhi.ui.style.globalStyle
 import com.chenxinzhi.utils.toComposePath
 import javafx.application.Platform
@@ -62,7 +68,7 @@ fun MediaPlayer(
     currentTimeChange: (Float) -> Unit,
     showContent: () -> Unit,
 
-) {
+    ) {
     var duration by remember { mutableStateOf(0f) }
     var isLoaded by remember { mutableStateOf(false) }
     var isPlaying by remember { mutableStateOf(false) }
@@ -83,6 +89,7 @@ fun MediaPlayer(
     }
     remember(currentTime) {
         currentTimeChange(currentTime)
+        updateByKey(FuncEnum.PLAY_CURRENT_TIME, currentTime.toString())
     }
     val rememberCoroutineScope = rememberCoroutineScope()
     var isWait by remember { mutableStateOf(false) }
@@ -105,12 +112,13 @@ fun MediaPlayer(
                 setOnEndOfMedia {
                     isPlaying = false
                 }
-
                 volumeProperty().value = volume.toDouble()
             }
             mediaPlayerState = mediaPlayer.apply {
-                cycleCount = MediaPlayer.INDEFINITE
-                play()
+//                cycleCount = MediaPlayer.INDEFINITE
+//                play()
+
+
             }
 
         }
@@ -134,6 +142,18 @@ fun MediaPlayer(
                 }
             }
     ) {
+        LaunchedEffect(Unit) {
+            rememberCoroutineScope.launch {
+                isWait = true
+               val v =  getByKey(FuncEnum.PLAY_CURRENT_TIME, "0").toFloat()
+                println(v)
+                currentTime = v
+                delay(1000)
+                mediaPlayerState?.seek(Duration.seconds(currentTime.toDouble()))
+                delay(1)
+                isWait = false
+            }
+        }
         val region = remember { Region() }
         var isPause by remember { mutableStateOf(false) }
         MusicLinearProgressIndicator(progress) {
@@ -163,7 +183,7 @@ fun MediaPlayer(
         }
         val musicControlColor = globalStyle.current.musicControlColor
         Box(modifier = Modifier.padding(top = 2.dp)) {
-            Row {
+            Row(modifier = Modifier.width(300.dp)) {
                 Image(
                     painterResource("image/musicPic.jpg"),
                     contentDescription = null,
@@ -186,6 +206,7 @@ fun MediaPlayer(
                             overflow = TextOverflow.Ellipsis,
                             fontSize = globalStyle.current.mediaPlayerMusicNameSize,
                             lineHeight = globalStyle.current.mediaPlayerMusicNameSize,
+                            maxLines = 1,
                             color = globalStyle.current.mediaPlayerMusicNameColor,
                             textAlign = TextAlign.Center
                         )
@@ -194,6 +215,7 @@ fun MediaPlayer(
                             "-", fontSize = globalStyle.current.mediaPlayerMusicSingerNameSize,
                             color = globalStyle.current.mediaPlayerMusicSingerNameColor,
                             textAlign = TextAlign.Center,
+                            maxLines = 1,
                             lineHeight = globalStyle.current.mediaPlayerMusicSingerNameSize
                         )
                         Box(Modifier.width(2.dp))
@@ -201,6 +223,7 @@ fun MediaPlayer(
                         Text(
                             "告五人",
                             overflow = TextOverflow.Ellipsis,
+                            maxLines = 1,
                             fontSize = globalStyle.current.mediaPlayerMusicSingerNameSize,
                             color = globalStyle.current.mediaPlayerMusicSingerNameColor,
                             textAlign = TextAlign.Center,
@@ -413,6 +436,94 @@ fun MediaPlayer(
                 }
 
             }
+
+            //音量,循环按钮
+            Row(
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.Top,
+                modifier = Modifier.fillMaxSize().padding(end = 10.dp)
+            ) {
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center
+                ) {
+                    //动画设置显示隐藏
+                    val interactionSource = remember {
+                        MutableInteractionSource()
+                    }
+                    val hover by interactionSource.collectIsHoveredAsState()
+                    val alpha by animateFloatAsState(
+                        if (hover) {
+                            1f
+                        } else {
+                            0f
+                        }
+                    )
+                    Text(
+                        "播放列表",
+                        fontSize = 12.sp,
+                        color = globalStyle.current.RightControlColor,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 12.sp,
+                        modifier = Modifier
+                            .alpha(alpha)
+                            .shadow(5.dp, spotColor = Color.White, shape = RoundedCornerShape(4.dp))
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(globalStyle.current.RightControlBackgroundColor)
+                            .padding(2.dp)
+                    )
+                    Icon(
+                        painterResource("image/ic_play_list.webp"),
+                        tint = globalStyle.current.RightControlColor,
+                        contentDescription = null,
+                        modifier = Modifier.size(19.dp)
+                            .hoverable(interactionSource)
+                    )
+                }
+                val playModeList = listOf(
+                    "image/ic_play_mode_loop.webp" to "循环播放",
+                    "image/ic_play_mode_random.webp" to "随机播放",
+                    "ic_play_mode_single.webp" to "单曲循环"
+                )
+                Column {
+                    //动画设置显示隐藏
+                    val interactionSource = remember {
+                        MutableInteractionSource()
+                    }
+                    val hover by interactionSource.collectIsHoveredAsState()
+                    val alpha by animateFloatAsState(
+                        if (hover) {
+                            1f
+                        } else {
+                            0f
+                        }
+                    )
+                    var nowIndex by remember { mutableStateOf(0) }
+                    Text(
+                        "播放列表",
+                        fontSize = 12.sp,
+                        color = globalStyle.current.RightControlColor,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 12.sp,
+                        modifier = Modifier
+                            .alpha(alpha)
+                            .shadow(5.dp, spotColor = Color.White, shape = RoundedCornerShape(4.dp))
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(globalStyle.current.RightControlBackgroundColor)
+                            .padding(2.dp)
+                    )
+                    Icon(
+                        painterResource("image/ic_play_list.webp"),
+                        tint = globalStyle.current.RightControlColor,
+                        contentDescription = null,
+                        modifier = Modifier.size(19.dp)
+                            .hoverable(interactionSource)
+                    )
+                }
+
+
+            }
+
         }
     }
 }

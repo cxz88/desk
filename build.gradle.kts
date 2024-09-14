@@ -5,6 +5,7 @@ plugins {
     id("org.jetbrains.compose")
     id("org.jetbrains.kotlin.plugin.compose")
     id("org.openjfx.javafxplugin") version "0.0.13"
+    id("app.cash.sqldelight") version "2.0.2"
 }
 
 group = "com.chenxinzhi"
@@ -17,6 +18,7 @@ repositories {
 }
 
 dependencies {
+    implementation("app.cash.sqldelight:sqlite-driver:2.0.2")
     // Note, if you develop a library, you should use compose.desktop.common.
     // compose.desktop.currentOs should be used in launcher-sourceSet
     // (in a separate module for demo project and in testMain).
@@ -45,6 +47,7 @@ dependencies {
 
 
 
+
 }
 
 compose.desktop {
@@ -55,6 +58,14 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb,TargetFormat.Exe)
             packageName = "deskApp"
             packageVersion = "1.0.0"
+        }
+    }
+}
+
+sqldelight {
+    databases {
+        create("Database") {
+            packageName.set("com.chenxinzhi.repository")
         }
     }
 }

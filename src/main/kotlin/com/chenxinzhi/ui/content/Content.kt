@@ -70,7 +70,7 @@ fun FrameWindowScope.Content(
             }
             .map {
                 convertToSeconds(it.key) to it.value
-            }.toList().onEach(::println)
+            }.toList()
     }
 
     Box(

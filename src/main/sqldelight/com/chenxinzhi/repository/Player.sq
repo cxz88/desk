@@ -1,0 +1,20 @@
+
+CREATE TABLE PlayerFunc (
+  "musicFunc" text NOT NULL,
+  "musicKey" text NOT NULL,
+  "musicValue" text NOT NULL,
+  PRIMARY KEY ("musicFunc")
+);
+
+CREATE INDEX primary_index ON PlayerFunc(musicFunc);
+
+
+
+selectByFuncKey:
+SELECT * FROM PlayerFunc WHERE musicFunc = ? AND musicKey= ?;
+
+updateByFuncKey:
+UPDATE  PlayerFunc SET musicValue= ? WHERE musicFunc = ? AND musicKey= ?;
+
+insertByFuncKey:
+INSERT INTO PlayerFunc (musicFunc,musicKey,musicValue)VALUES (?,?,?);

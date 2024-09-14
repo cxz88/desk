@@ -95,7 +95,7 @@ fun FrameWindowScope.Content(
         }
 
         var isPlay by remember { mutableStateOf(false) }
-        val conRateAni by animateFloatAsState(if (isPlay) conRate else -40f, tween(500))
+        val conRateAni by animateFloatAsState(if (isPlay) conRate else -40f, )
         var currentTime by remember { mutableStateOf(0f) }
         Column {
             Box {

@@ -47,10 +47,12 @@ import javafx.application.Platform
 import javafx.scene.media.Media
 import javafx.scene.media.MediaPlayer
 import javafx.util.Duration
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.skia.IRect
 import org.jetbrains.skia.Region
+import kotlin.coroutines.ContinuationInterceptor
 import kotlin.math.min
 import kotlin.math.roundToInt
 
@@ -69,9 +71,12 @@ fun MediaPlayer(
     showContent: () -> Unit,
 
     ) {
+    val rememberCoroutineScope = rememberCoroutineScope()
+    var isPause by remember { mutableStateOf(false) }
+    var currentTimeReady by remember { mutableStateOf(false) }
+    var pauseReady by remember { mutableStateOf(false) }
     var duration by remember { mutableStateOf(0f) }
     var isLoaded by remember { mutableStateOf(false) }
-    var isPlaying by remember { mutableStateOf(false) }
     var volume by remember { mutableStateOf(1f) }
     var mediaPlayerState by remember { mutableStateOf<MediaPlayer?>(null) }
     var currentTime by remember { mutableStateOf(0f) }
@@ -87,11 +92,15 @@ fun MediaPlayer(
     remember(progress) {
         processCallback(progress)
     }
+
     remember(currentTime) {
         currentTimeChange(currentTime)
-        updateByKey(FuncEnum.PLAY_CURRENT_TIME, currentTime.toString())
+        rememberCoroutineScope.launch {
+            if (currentTimeReady) {
+                updateByKey(FuncEnum.PLAY_CURRENT_TIME, currentTime.toString())
+            }
+        }
     }
-    val rememberCoroutineScope = rememberCoroutineScope()
     var isWait by remember { mutableStateOf(false) }
     DisposableEffect(url) {
         Platform.startup {
@@ -100,6 +109,16 @@ fun MediaPlayer(
                 setOnReady {
                     duration = media.duration.toSeconds().toFloat()
                     isLoaded = true
+                    rememberCoroutineScope.launch {
+                        val v = getByKey(FuncEnum.PLAY_CURRENT_TIME, "0").toFloat()
+                        currentTime = v
+                        mediaPlayerState?.seek(Duration.seconds(currentTime.toDouble()))
+                        currentTimeReady = true
+                        val p = getByKey(FuncEnum.PLAY_OR_PAUSE_STATE, "0").toInt()
+                        isPause = p == 0
+                        pauseReady=true
+                    }
+
                 }
                 currentTimeProperty().addListener { _, _, newValue ->
                     if (isWait) {
@@ -110,7 +129,7 @@ fun MediaPlayer(
 
                 }
                 setOnEndOfMedia {
-                    isPlaying = false
+                    isPause = true
                 }
                 volumeProperty().value = volume.toDouble()
             }
@@ -142,20 +161,7 @@ fun MediaPlayer(
                 }
             }
     ) {
-        LaunchedEffect(Unit) {
-            rememberCoroutineScope.launch {
-                isWait = true
-               val v =  getByKey(FuncEnum.PLAY_CURRENT_TIME, "0").toFloat()
-                println(v)
-                currentTime = v
-                delay(1000)
-                mediaPlayerState?.seek(Duration.seconds(currentTime.toDouble()))
-                delay(1)
-                isWait = false
-            }
-        }
         val region = remember { Region() }
-        var isPause by remember { mutableStateOf(false) }
         MusicLinearProgressIndicator(progress) {
             //将当前的时间加上对应的百分比
             rememberCoroutineScope.launch {
@@ -175,6 +181,11 @@ fun MediaPlayer(
         }
         remember(isPause) {
             isPlayCallback(!isPause)
+            rememberCoroutineScope.launch {
+                if (pauseReady) {
+                    updateByKey(FuncEnum.PLAY_OR_PAUSE_STATE,if (isPause) "0" else "1")
+                }
+            }
         }
         val paint = remember {
             Paint().apply {

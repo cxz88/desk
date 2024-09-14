@@ -1,8 +1,10 @@
 package com.chenxinzhi.sqlservice
 
 import com.chenxinzhi.repository.PlayerQueries
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.internal.synchronized
+import kotlinx.coroutines.withContext
 import sqlDriver
 
 /**
@@ -15,31 +17,32 @@ import sqlDriver
 enum class FuncEnum(val musicFunc: String, val key: String) {
     PLAY_MODEL("playModel", "playModel"),
     PLAY_CURRENT_TIME("playCurrentTime", "playCurrentTime"),
+    PLAY_OR_PAUSE_STATE("playOrPauseState", "playOrPauseState"),
 }
+
 
 val GET_BY_KEY_LOCK = Any()
 
 @OptIn(InternalCoroutinesApi::class)
-fun getByKey(func: FuncEnum, defaultValue: String) =
-
-    with(PlayerQueries(sqlDriver)) {
-        println(
+suspend fun getByKey(func: FuncEnum, defaultValue: String) =
+    withContext(Dispatchers.IO) {
+        with(PlayerQueries(sqlDriver)) {
             selectByFuncKey(func.musicFunc, func.key)
-                .executeAsOne()
-        )
-        selectByFuncKey(func.musicFunc, func.key)
-            .executeAsOneOrNull()?.musicValue?: synchronized(GET_BY_KEY_LOCK) {
-            selectByFuncKey(func.musicFunc, func.key)
-                .executeAsOneOrNull()?.musicValue ?: insertByFuncKey(func.musicFunc, func.key, defaultValue)
-                .let {
-                    defaultValue
-                }
+                .executeAsOneOrNull()?.musicValue ?: synchronized(GET_BY_KEY_LOCK) {
+                selectByFuncKey(func.musicFunc, func.key)
+                    .executeAsOneOrNull()?.musicValue ?: insertByFuncKey(func.musicFunc, func.key, defaultValue)
+                    .let {
+                        defaultValue
+                    }
+            }
         }
     }
 
 
-fun updateByKey(func: FuncEnum, value: String) =
-    with(PlayerQueries(sqlDriver)) {
-        updateByFuncKey(value, func.musicFunc, func.key)
+suspend fun updateByKey(func: FuncEnum, value: String) =
+    withContext(Dispatchers.IO) {
+        with(PlayerQueries(sqlDriver)) {
+            updateByFuncKey(value, func.musicFunc, func.key)
+        }
     }
 

@@ -72,6 +72,7 @@ fun MediaPlayer(
 
     ) {
     val rememberCoroutineScope = rememberCoroutineScope()
+    var isReady by remember { mutableStateOf(false) }
     var isPause by remember { mutableStateOf(false) }
     var currentTimeReady by remember { mutableStateOf(false) }
     var pauseReady by remember { mutableStateOf(false) }
@@ -109,6 +110,7 @@ fun MediaPlayer(
                 setOnReady {
                     duration = media.duration.toSeconds().toFloat()
                     isLoaded = true
+                    isReady = true
                     rememberCoroutineScope.launch {
                         val v = getByKey(FuncEnum.PLAY_CURRENT_TIME, "0").toFloat()
                         currentTime = v
@@ -116,7 +118,7 @@ fun MediaPlayer(
                         currentTimeReady = true
                         val p = getByKey(FuncEnum.PLAY_OR_PAUSE_STATE, "0").toInt()
                         isPause = p == 0
-                        pauseReady=true
+                        pauseReady = true
                     }
 
                 }
@@ -129,13 +131,11 @@ fun MediaPlayer(
 
                 }
                 setOnEndOfMedia {
-                    isPause = true
+
                 }
                 volumeProperty().value = volume.toDouble()
             }
             mediaPlayerState = mediaPlayer.apply {
-//                cycleCount = MediaPlayer.INDEFINITE
-//                play()
 
 
             }
@@ -174,16 +174,16 @@ fun MediaPlayer(
             }
 
         }
-        if (isPause) {
-            mediaPlayerState?.pause()
-        } else {
-            mediaPlayerState?.play()
-        }
-        remember(isPause) {
+        remember(isPause,isReady) {
+            if (isPause) {
+                mediaPlayerState?.pause()
+            } else {
+                mediaPlayerState?.play()
+            }
             isPlayCallback(!isPause)
             rememberCoroutineScope.launch {
                 if (pauseReady) {
-                    updateByKey(FuncEnum.PLAY_OR_PAUSE_STATE,if (isPause) "0" else "1")
+                    updateByKey(FuncEnum.PLAY_OR_PAUSE_STATE, if (isPause) "0" else "1")
                 }
             }
         }

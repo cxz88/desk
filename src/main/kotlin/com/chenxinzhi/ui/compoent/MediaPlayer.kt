@@ -9,6 +9,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,6 +18,7 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
@@ -33,18 +35,27 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.graphics.shapes.CornerRounding
 import androidx.graphics.shapes.RoundedPolygon
+import com.chenxinzhi.sqlservice.FuncEnum
+import com.chenxinzhi.sqlservice.getByKey
+import com.chenxinzhi.sqlservice.updateByKey
 import com.chenxinzhi.ui.style.globalStyle
 import com.chenxinzhi.utils.toComposePath
+import com.chenxinzhi.viewmodel.media.MediaPlayerViewModel
+import com.chenxinzhi.viewmodel.media.ProcessIndicatorViewModel
 import javafx.application.Platform
 import javafx.scene.media.Media
 import javafx.scene.media.MediaPlayer
 import javafx.util.Duration
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import moe.tlaster.precompose.viewmodel.viewModel
 import org.jetbrains.skia.IRect
 import org.jetbrains.skia.Region
+import kotlin.coroutines.ContinuationInterceptor
 import kotlin.math.min
 import kotlin.math.roundToInt
 
@@ -57,69 +68,62 @@ import kotlin.math.roundToInt
 @Composable
 fun MediaPlayer(
     url: String = "",
+    mediaPlayerViewModel: MediaPlayerViewModel = viewModel {
+        MediaPlayerViewModel()
+    },
     isPlayCallback: (Boolean) -> Unit,
     processCallback: (Float) -> Unit,
     currentTimeChange: (Float) -> Unit,
     showContent: () -> Unit,
-
 ) {
-    var duration by remember { mutableStateOf(0f) }
-    var isLoaded by remember { mutableStateOf(false) }
-    var isPlaying by remember { mutableStateOf(false) }
-    var volume by remember { mutableStateOf(1f) }
-    var mediaPlayerState by remember { mutableStateOf<MediaPlayer?>(null) }
-    var currentTime by remember { mutableStateOf(0f) }
-    val progress by remember {
-        derivedStateOf {
-            if (currentTime == 0f && duration == 0f) {
-                0f
-            } else {
-                currentTime / duration
+    val rememberCoroutineScope = rememberCoroutineScope()
+    remember(mediaPlayerViewModel.progress) {
+        processCallback(mediaPlayerViewModel.progress)
+    }
+    remember(mediaPlayerViewModel.currentTime, mediaPlayerViewModel.isReady) {
+        currentTimeChange(mediaPlayerViewModel.currentTime)
+        rememberCoroutineScope.launch {
+            if (mediaPlayerViewModel.isReady) {
+                updateByKey(FuncEnum.PLAY_CURRENT_TIME, mediaPlayerViewModel.currentTime.toString())
             }
         }
     }
-    remember(progress) {
-        processCallback(progress)
-    }
-    remember(currentTime) {
-        currentTimeChange(currentTime)
-    }
-    val rememberCoroutineScope = rememberCoroutineScope()
-    var isWait by remember { mutableStateOf(false) }
     DisposableEffect(url) {
         Platform.startup {
             val media = Media(url)
-            val mediaPlayer = MediaPlayer(media).apply {
+            mediaPlayerViewModel.mediaPlayerState = MediaPlayer(media).apply {
                 setOnReady {
-                    duration = media.duration.toSeconds().toFloat()
-                    isLoaded = true
+                    mediaPlayerViewModel.duration = media.duration.toSeconds().toFloat()
+                    rememberCoroutineScope.launch {
+                        val v = getByKey(FuncEnum.PLAY_CURRENT_TIME, "0").toFloat()
+                        mediaPlayerViewModel.currentTime = v
+                        mediaPlayerViewModel.mediaPlayerState?.seek(Duration.seconds(mediaPlayerViewModel.currentTime.toDouble()))
+                        val p = getByKey(FuncEnum.PLAY_OR_PAUSE_STATE, "0").toInt()
+                        mediaPlayerViewModel.isPause = p == 0
+                        mediaPlayerViewModel.isReady = true
+                    }
+
                 }
                 currentTimeProperty().addListener { _, _, newValue ->
-                    if (isWait) {
+                    if (mediaPlayerViewModel.isWait) {
                         return@addListener
                     }
-                    currentTime = newValue.toSeconds().toFloat()
+                    mediaPlayerViewModel.currentTime = newValue.toSeconds().toFloat()
 
 
                 }
                 setOnEndOfMedia {
-                    isPlaying = false
+                    mediaPlayerViewModel.mediaPlayerState?.dispose()
                 }
+                volumeProperty().value = volume
+            }
 
-                volumeProperty().value = volume.toDouble()
-            }
-            mediaPlayerState = mediaPlayer.apply {
-                cycleCount = MediaPlayer.INDEFINITE
-                play()
-            }
 
         }
-
         onDispose {
-            mediaPlayerState?.dispose()
+
         }
     }
-    var showPaint by remember { mutableStateOf(false) }
     Box(
         modifier = Modifier.background(globalStyle.current.mediaPlayerBackgroundColor).fillMaxWidth()
             .height(62.dp).pointerInput(Unit) {
@@ -129,32 +133,36 @@ fun MediaPlayer(
                         if (event.changes[0].isConsumed) {
                             continue;
                         }
-                        showPaint = false
+                        mediaPlayerViewModel.showPaint = false
                     }
                 }
             }
     ) {
         val region = remember { Region() }
-        var isPause by remember { mutableStateOf(false) }
-        MusicLinearProgressIndicator(progress) {
+        MusicLinearProgressIndicator(mediaPlayerViewModel.progress) {
             //将当前的时间加上对应的百分比
             rememberCoroutineScope.launch {
-                isWait = true
-                val d = duration * it.toDouble()
-                currentTime = d.toFloat()
-                mediaPlayerState?.seek(Duration.seconds(d))
+                mediaPlayerViewModel.isWait = true
+                val d = mediaPlayerViewModel.duration * it.toDouble()
+                mediaPlayerViewModel.currentTime = d.toFloat()
+                mediaPlayerViewModel.mediaPlayerState?.seek(Duration.seconds(d))
                 delay(1)
-                isWait = false
+                mediaPlayerViewModel.isWait = false
             }
 
         }
-        if (isPause) {
-            mediaPlayerState?.pause()
-        } else {
-            mediaPlayerState?.play()
-        }
-        remember(isPause) {
-            isPlayCallback(!isPause)
+        remember(mediaPlayerViewModel.isPause, mediaPlayerViewModel.isReady) {
+            if (mediaPlayerViewModel.isPause) {
+                mediaPlayerViewModel.mediaPlayerState?.pause()
+            } else {
+                mediaPlayerViewModel.mediaPlayerState?.play()
+            }
+            isPlayCallback(!mediaPlayerViewModel.isPause)
+            rememberCoroutineScope.launch {
+                if (mediaPlayerViewModel.isReady) {
+                    updateByKey(FuncEnum.PLAY_OR_PAUSE_STATE, if (mediaPlayerViewModel.isPause) "0" else "1")
+                }
+            }
         }
         val paint = remember {
             Paint().apply {
@@ -163,7 +171,7 @@ fun MediaPlayer(
         }
         val musicControlColor = globalStyle.current.musicControlColor
         Box(modifier = Modifier.padding(top = 2.dp)) {
-            Row {
+            Row(modifier = Modifier.width(300.dp)) {
                 Image(
                     painterResource("image/musicPic.jpg"),
                     contentDescription = null,
@@ -186,6 +194,7 @@ fun MediaPlayer(
                             overflow = TextOverflow.Ellipsis,
                             fontSize = globalStyle.current.mediaPlayerMusicNameSize,
                             lineHeight = globalStyle.current.mediaPlayerMusicNameSize,
+                            maxLines = 1,
                             color = globalStyle.current.mediaPlayerMusicNameColor,
                             textAlign = TextAlign.Center
                         )
@@ -194,6 +203,7 @@ fun MediaPlayer(
                             "-", fontSize = globalStyle.current.mediaPlayerMusicSingerNameSize,
                             color = globalStyle.current.mediaPlayerMusicSingerNameColor,
                             textAlign = TextAlign.Center,
+                            maxLines = 1,
                             lineHeight = globalStyle.current.mediaPlayerMusicSingerNameSize
                         )
                         Box(Modifier.width(2.dp))
@@ -201,6 +211,7 @@ fun MediaPlayer(
                         Text(
                             "告五人",
                             overflow = TextOverflow.Ellipsis,
+                            maxLines = 1,
                             fontSize = globalStyle.current.mediaPlayerMusicSingerNameSize,
                             color = globalStyle.current.mediaPlayerMusicSingerNameColor,
                             textAlign = TextAlign.Center,
@@ -210,7 +221,7 @@ fun MediaPlayer(
                     Box(modifier = Modifier.height(5.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            currentTime.toInt().let {
+                            mediaPlayerViewModel.currentTime.toInt().let {
                                 "${(it / 60).toString().padStart(2, '0')}:${(it % 60).toString().padStart(2, '0')}"
                             },
                             overflow = TextOverflow.Ellipsis,
@@ -229,7 +240,7 @@ fun MediaPlayer(
                         Box(Modifier.width(3.dp))
 
                         Text(
-                            duration.roundToInt().let {
+                            mediaPlayerViewModel.duration.roundToInt().let {
                                 "${(it / 60).toString().padStart(2, '0')}:${(it % 60).toString().padStart(2, '0')}"
                             },
                             fontSize = globalStyle.current.durationFontSize,
@@ -276,7 +287,7 @@ fun MediaPlayer(
                 Box(modifier = Modifier.width(15.dp))
                 Box(modifier = Modifier
                     .composed {
-                        if (showPaint) {
+                        if (mediaPlayerViewModel.showPaint) {
                             Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
                         } else {
                             Modifier
@@ -313,7 +324,7 @@ fun MediaPlayer(
                                     radius = size.minDimension / 2f,
                                     paint = paint
                                 )
-                                if (isPause) {
+                                if (mediaPlayerViewModel.isPause) {
                                     paint.color = Color.White
                                     it.drawPath(roundedPolygonPath, paint = paint)
                                 } else {
@@ -349,7 +360,7 @@ fun MediaPlayer(
                                     pointerInputChange.position.x.roundToInt(),
                                     pointerInputChange.position.y.roundToInt()
                                 )
-                                showPaint = contains
+                                mediaPlayerViewModel.showPaint = contains
                                 if (!contains) {
                                     continue
                                 }
@@ -377,7 +388,7 @@ fun MediaPlayer(
                                         }
                                     } else if (e.type == PointerEventType.Release) {
                                         //执行回掉并退出
-                                        isPause = !isPause
+                                        mediaPlayerViewModel.isPause = !mediaPlayerViewModel.isPause
                                         b = false
                                     }
                                 }
@@ -413,16 +424,106 @@ fun MediaPlayer(
                 }
 
             }
+
+            //音量,循环按钮
+            Row(
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.Top,
+                modifier = Modifier.fillMaxSize().padding(end = 10.dp)
+            ) {
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center
+                ) {
+                    //动画设置显示隐藏
+                    val interactionSource = remember {
+                        MutableInteractionSource()
+                    }
+                    val hover by interactionSource.collectIsHoveredAsState()
+                    val alpha by animateFloatAsState(
+                        if (hover) {
+                            1f
+                        } else {
+                            0f
+                        }
+                    )
+                    Text(
+                        "播放列表",
+                        fontSize = 12.sp,
+                        color = globalStyle.current.RightControlColor,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 12.sp,
+                        modifier = Modifier
+                            .alpha(alpha)
+                            .shadow(5.dp, spotColor = Color.White, shape = RoundedCornerShape(4.dp))
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(globalStyle.current.RightControlBackgroundColor)
+                            .padding(2.dp)
+                    )
+                    Icon(
+                        painterResource("image/ic_play_list.webp"),
+                        tint = globalStyle.current.RightControlColor,
+                        contentDescription = null,
+                        modifier = Modifier.size(19.dp)
+                            .hoverable(interactionSource)
+                    )
+                }
+                val playModeList = listOf(
+                    "image/ic_play_mode_loop.webp" to "循环播放",
+                    "image/ic_play_mode_random.webp" to "随机播放",
+                    "ic_play_mode_single.webp" to "单曲循环"
+                )
+                Column {
+                    //动画设置显示隐藏
+                    val interactionSource = remember {
+                        MutableInteractionSource()
+                    }
+                    val hover by interactionSource.collectIsHoveredAsState()
+                    val alpha by animateFloatAsState(
+                        if (hover) {
+                            1f
+                        } else {
+                            0f
+                        }
+                    )
+                    var nowIndex by remember { mutableStateOf(0) }
+                    Text(
+                        "播放列表",
+                        fontSize = 12.sp,
+                        color = globalStyle.current.RightControlColor,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 12.sp,
+                        modifier = Modifier
+                            .alpha(alpha)
+                            .shadow(5.dp, spotColor = Color.White, shape = RoundedCornerShape(4.dp))
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(globalStyle.current.RightControlBackgroundColor)
+                            .padding(2.dp)
+                    )
+                    Icon(
+                        painterResource("image/ic_play_list.webp"),
+                        tint = globalStyle.current.RightControlColor,
+                        contentDescription = null,
+                        modifier = Modifier.size(19.dp)
+                            .hoverable(interactionSource)
+                    )
+                }
+
+
+            }
+
         }
     }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun MusicLinearProgressIndicator(processOut: Float, seek: (Float) -> Unit) {
-    var processInner by remember { mutableStateOf(0f) }
-    var useInner by remember { mutableStateOf(false) }
-    val process by animateFloatAsState(if (useInner) processInner else processOut, tween(1))
+fun MusicLinearProgressIndicator(
+    processOut: Float,
+    processIndicatorViewModel: ProcessIndicatorViewModel = viewModel { ProcessIndicatorViewModel() },
+    seek: (Float) -> Unit
+) {
+    val process by animateFloatAsState(if (processIndicatorViewModel.useInner) processIndicatorViewModel.processInner else processOut, tween(1))
     BoxWithConstraints {
         val processWidth = constraints.maxWidth
         val processWidthUse = min(processWidth * process, processWidth.toFloat())
@@ -435,10 +536,9 @@ fun MusicLinearProgressIndicator(processOut: Float, seek: (Float) -> Unit) {
         ) {
             drawRect(mediaPlayerProcessColor, size = Size(processWidthUse, size.height))
         }
-        val interactionSource = remember { MutableInteractionSource() }
-        val hover by interactionSource.collectIsHoveredAsState()
+        val hover by processIndicatorViewModel.interactionSource.collectIsHoveredAsState()
         val alpha by animateFloatAsState(if (hover) 1f else 0f)
-        Box(modifier = Modifier.fillMaxWidth().height(12.dp).hoverable(interactionSource)
+        Box(modifier = Modifier.fillMaxWidth().height(12.dp).hoverable(processIndicatorViewModel.interactionSource)
             .pointerInput(Unit) {
                 detectTapGestures {
                     seek(it.x / processWidth)
@@ -456,15 +556,15 @@ fun MusicLinearProgressIndicator(processOut: Float, seek: (Float) -> Unit) {
                     .pointerInput(Unit) {
                         detectDragGestures(matcher = PointerMatcher.Primary, onDragEnd = {
                             //应用进度条更改
-                            seek(processInner)
-                            useInner = false
+                            seek(processIndicatorViewModel.processInner)
+                            processIndicatorViewModel.useInner = false
 
                         }, onDragStart = {
-                            processInner = process
+                            processIndicatorViewModel.processInner = process
 
                         }) {
-                            useInner = true
-                            processInner += (it.x / processWidth)
+                            processIndicatorViewModel.useInner = true
+                            processIndicatorViewModel.processInner += (it.x / processWidth)
                         }
 
                     }

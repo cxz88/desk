@@ -54,6 +54,8 @@ object GlobalStyle {
     val lycFontSize by mutableStateOf(16f)
     val lycRightColor by mutableStateOf(Color(0xff333232))
     val lycCheckColor by mutableStateOf(Color(0xffffffff))
+    val RightControlColor by mutableStateOf(Color(0xffbebebe))
+    val RightControlBackgroundColor by mutableStateOf(Color(0xff252525))
     val lycFontCheckSize by mutableStateOf(17f)
     val durationFontSize by mutableStateOf(13.sp)
 }

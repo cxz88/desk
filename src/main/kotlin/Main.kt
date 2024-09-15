@@ -13,6 +13,7 @@ import com.chenxinzhi.ui.content.LeftContent
 import com.chenxinzhi.ui.content.RightContent
 import com.chenxinzhi.ui.style.GlobalStyle
 import com.chenxinzhi.ui.style.globalStyle
+import moe.tlaster.precompose.PreComposeApp
 
 val sqlDriver: SqlDriver = JdbcSqliteDriver("jdbc:sqlite:test.db")
 fun main() = application {
@@ -30,7 +31,9 @@ fun main() = application {
         title = "",
         resizable = false,
     ) {
-        App(state, ::exitApplication)
+        PreComposeApp {
+            App(state, ::exitApplication)
+        }
     }
 }
 

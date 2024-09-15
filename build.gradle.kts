@@ -40,6 +40,8 @@ dependencies {
     implementation("org.openjfx:javafx-media:21.0.4:${fxSuffix}")
     runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.9.0-RC.2")
     implementation(compose.desktop.currentOs)
+    api("moe.tlaster:precompose:1.6.2")
+    api("moe.tlaster:precompose-viewmodel:1.6.2")
 
 
 

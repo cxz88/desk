@@ -33,8 +33,10 @@ import androidx.compose.ui.window.FrameWindowScope
 import com.chenxinzhi.ui.style.GlobalStyle
 import com.chenxinzhi.ui.style.globalStyle
 import com.chenxinzhi.viewmodel.content.PlayContentViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import moe.tlaster.precompose.viewmodel.viewModel
 import kotlin.math.max
+
 @Composable
 fun FrameWindowScope.PlayContent(
     //原来的右边的内容
@@ -43,10 +45,12 @@ fun FrameWindowScope.PlayContent(
     isPlay: Boolean,
     currentTime: Float,
     conRateAni: Float,
+    lycContent: MutableStateFlow<String>,
     playContentViewModel: PlayContentViewModel = viewModel {
         PlayContentViewModel()
     },
-) {
+
+    ) {
     Box(modifier = Modifier.fillMaxSize()) {
         content()
         AnimatedVisibility(
@@ -70,11 +74,15 @@ fun FrameWindowScope.PlayContent(
                         )
                     }
                 }
-                val lycIndex by remember {
+                val lycIndex by remember(currentTime) {
                     derivedStateOf {
                         playContentViewModel.lycList.filter { currentTime >= it.first }
                             .lastIndex
+
                     }
+                }
+                remember(lycIndex) {
+                    lycContent.value = playContentViewModel.lycList[lycIndex].second
                 }
                 LazyColumn {
                     item {
@@ -167,7 +175,11 @@ fun FrameWindowScope.PlayContent(
                                         val lycColor by animateColorAsState(if (it == lycIndex) globalStyle.current.lycCheckColor else globalStyle.current.lycColor)
                                         val lycFontsize by animateFloatAsState(if (it == lycIndex) globalStyle.current.lycFontCheckSize else globalStyle.current.lycFontSize)
 
-                                        Text(playContentViewModel.lycList[it].second, color = lycColor, fontSize = lycFontsize.sp)
+                                        Text(
+                                            playContentViewModel.lycList[it].second,
+                                            color = lycColor,
+                                            fontSize = lycFontsize.sp
+                                        )
                                         Spacer(modifier = Modifier.height(8.dp))
                                     }
                                     item {

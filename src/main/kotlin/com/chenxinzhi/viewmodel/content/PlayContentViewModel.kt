@@ -1,10 +1,9 @@
 package com.chenxinzhi.viewmodel.content
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import com.chenxinzhi.utils.convertToSeconds
 import moe.tlaster.precompose.viewmodel.ViewModel
+
 
 class PlayContentViewModel : ViewModel() {
     val lycList by mutableStateOf(

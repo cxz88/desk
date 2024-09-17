@@ -21,6 +21,7 @@ import com.chenxinzhi.ui.compoent.MediaPlayer
 import com.chenxinzhi.ui.style.GlobalStyle
 import com.chenxinzhi.ui.topbar.Bar
 import com.chenxinzhi.ui.topbar.RightBar
+import kotlinx.coroutines.flow.MutableStateFlow
 
 /**
  * @description
@@ -32,6 +33,7 @@ import com.chenxinzhi.ui.topbar.RightBar
 fun FrameWindowScope.Content(
     state: WindowState,
     exitApplication: () -> Unit,
+    lycContent: MutableStateFlow<String>,
     content: @Composable FrameWindowScope.() -> Unit = {}
 ) {
 
@@ -133,7 +135,7 @@ fun FrameWindowScope.Content(
 
                 }
             }
-            PlayContent(content, show, isPlay, currentTime, conRateAni)
+            PlayContent(content, show, isPlay, currentTime, conRateAni,lycContent)
         }
         //播放器
         Column(verticalArrangement = Arrangement.Bottom, modifier = Modifier.fillMaxSize()) {

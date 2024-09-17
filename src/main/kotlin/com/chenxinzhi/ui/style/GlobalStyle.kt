@@ -58,4 +58,8 @@ object GlobalStyle {
     val RightControlBackgroundColor by mutableStateOf(Color(0xff252525))
     val lycFontCheckSize by mutableStateOf(17f)
     val durationFontSize by mutableStateOf(13.sp)
+
+
+    val deskLycBackGround by mutableStateOf(Color(0x33000000))
+
 }

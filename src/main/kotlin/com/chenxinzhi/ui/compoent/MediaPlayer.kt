@@ -109,11 +109,10 @@ fun MediaPlayer(
                         return@addListener
                     }
                     mediaPlayerViewModel.currentTime = newValue.toSeconds().toFloat()
-
-
                 }
                 setOnEndOfMedia {
-                    mediaPlayerViewModel.mediaPlayerState?.dispose()
+                    mediaPlayerViewModel.isPause = true
+
                 }
                 volumeProperty().value = volume
             }
@@ -121,7 +120,7 @@ fun MediaPlayer(
 
         }
         onDispose {
-
+            mediaPlayerViewModel.mediaPlayerState?.dispose()
         }
     }
     Box(
@@ -468,11 +467,7 @@ fun MediaPlayer(
                             .hoverable(interactionSource)
                     )
                 }
-                val playModeList = listOf(
-                    "image/ic_play_mode_loop.webp" to "循环播放",
-                    "image/ic_play_mode_random.webp" to "随机播放",
-                    "ic_play_mode_single.webp" to "单曲循环"
-                )
+
                 Column {
                     //动画设置显示隐藏
                     val interactionSource = remember {
@@ -486,9 +481,8 @@ fun MediaPlayer(
                             0f
                         }
                     )
-                    var nowIndex by remember { mutableStateOf(0) }
                     Text(
-                        "播放列表",
+                        mediaPlayerViewModel.playModeList[mediaPlayerViewModel.nowPlayerModel].second,
                         fontSize = 12.sp,
                         color = globalStyle.current.RightControlColor,
                         textAlign = TextAlign.Center,
@@ -501,11 +495,56 @@ fun MediaPlayer(
                             .padding(2.dp)
                     )
                     Icon(
-                        painterResource("image/ic_play_list.webp"),
+                        painterResource(mediaPlayerViewModel.playModeList[mediaPlayerViewModel.nowPlayerModel].first),
                         tint = globalStyle.current.RightControlColor,
                         contentDescription = null,
                         modifier = Modifier.size(19.dp)
                             .hoverable(interactionSource)
+                            .pointerInput(Unit) {
+                                detectTapGestures {
+                                    mediaPlayerViewModel.setNowPlayerModel(mediaPlayerViewModel.nowPlayerModel + 1)
+                                }
+                            }
+                    )
+                }
+                //音量调节
+                Column {
+                    //动画设置显示隐藏
+                    val interactionSource = remember {
+                        MutableInteractionSource()
+                    }
+                    val hover by interactionSource.collectIsHoveredAsState()
+                    val alpha by animateFloatAsState(
+                        if (hover) {
+                            1f
+                        } else {
+                            0f
+                        }
+                    )
+                    Text(
+                        mediaPlayerViewModel.playModeList[mediaPlayerViewModel.nowPlayerModel].second,
+                        fontSize = 12.sp,
+                        color = globalStyle.current.RightControlColor,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 12.sp,
+                        modifier = Modifier
+                            .alpha(alpha)
+                            .shadow(5.dp, spotColor = Color.White, shape = RoundedCornerShape(4.dp))
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(globalStyle.current.RightControlBackgroundColor)
+                            .padding(2.dp)
+                    )
+                    Icon(
+                        painterResource(mediaPlayerViewModel.playModeList[mediaPlayerViewModel.nowPlayerModel].first),
+                        tint = globalStyle.current.RightControlColor,
+                        contentDescription = null,
+                        modifier = Modifier.size(19.dp)
+                            .hoverable(interactionSource)
+                            .pointerInput(Unit) {
+                                detectTapGestures {
+                                    mediaPlayerViewModel.setNowPlayerModel(mediaPlayerViewModel.nowPlayerModel + 1)
+                                }
+                            }
                     )
                 }
 
@@ -523,7 +562,10 @@ fun MusicLinearProgressIndicator(
     processIndicatorViewModel: ProcessIndicatorViewModel = viewModel { ProcessIndicatorViewModel() },
     seek: (Float) -> Unit
 ) {
-    val process by animateFloatAsState(if (processIndicatorViewModel.useInner) processIndicatorViewModel.processInner else processOut, tween(1))
+    val process by animateFloatAsState(
+        if (processIndicatorViewModel.useInner) processIndicatorViewModel.processInner else processOut,
+        tween(1)
+    )
     BoxWithConstraints {
         val processWidth = constraints.maxWidth
         val processWidthUse = min(processWidth * process, processWidth.toFloat())

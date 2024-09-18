@@ -6,6 +6,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
     id("org.openjfx.javafxplugin") version "0.0.13"
     id("app.cash.sqldelight") version "2.0.2"
+    kotlin("plugin.serialization") version "2.0.20"
 }
 
 group = "com.chenxinzhi"
@@ -42,12 +43,11 @@ dependencies {
     implementation(compose.desktop.currentOs)
     api("moe.tlaster:precompose:1.6.2")
     api("moe.tlaster:precompose-viewmodel:1.6.2")
-
-
-
-
-
-
+    val ktor_version = "2.3.12"
+    implementation("io.ktor:ktor-client-core:$ktor_version")
+    implementation("io.ktor:ktor-client-cio:$ktor_version")
+    implementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
 
 
 }
@@ -57,7 +57,7 @@ compose.desktop {
         mainClass = "MainKt"
 
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb,TargetFormat.Exe)
+            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Exe)
             packageName = "deskApp"
             packageVersion = "1.0.0"
         }

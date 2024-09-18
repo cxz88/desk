@@ -37,18 +37,38 @@ class MediaPlayerViewModel : ViewModel() {
     val nowPlayerModel
         get() = _nowPlayerModel
 
+    var isReadyAll = mutableStateOf(false)
+
+
+    private var _showDeskLyc by mutableStateOf(false)
+
+    val showDeskLyc
+        get() = _showDeskLyc
+
+    fun setShowDeskLyc(value: Boolean) {
+        _showDeskLyc = value
+        if (isReady) {
+            viewModelScope.launch {
+                updateByKey(FuncEnum.SHOW_DESK_LYC, value.toString())
+            }
+        }
+    }
+
 
     fun setNowPlayerModel(value: Int) {
         val v = value % (playModeList.size)
         _nowPlayerModel = v
-        viewModelScope.launch {
-            updateByKey(FuncEnum.PLAY_MODEL, v.toString())
+        if (isReady) {
+            viewModelScope.launch {
+                updateByKey(FuncEnum.PLAY_MODEL, v.toString())
+            }
         }
     }
 
     init {
         viewModelScope.launch {
             _nowPlayerModel = getByKey(FuncEnum.PLAY_MODEL, "0").toInt()
+            _showDeskLyc = getByKey(FuncEnum.SHOW_DESK_LYC, false.toString()).toBoolean()
         }
     }
 

@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -76,8 +77,8 @@ fun FrameWindowScope.PlayContent(
                 }
                 val lycIndex by remember(currentTime) {
                     derivedStateOf {
-                        playContentViewModel.lycList.filter { currentTime >= it.first }
-                            .lastIndex
+                        max(0, playContentViewModel.lycList.filter { currentTime >= it.first }
+                            .lastIndex)
 
                     }
                 }
@@ -178,7 +179,8 @@ fun FrameWindowScope.PlayContent(
                                         Text(
                                             playContentViewModel.lycList[it].second,
                                             color = lycColor,
-                                            fontSize = lycFontsize.sp
+                                            fontSize = lycFontsize.sp,
+                                            overflow = TextOverflow.Ellipsis, maxLines = 1
                                         )
                                         Spacer(modifier = Modifier.height(8.dp))
                                     }

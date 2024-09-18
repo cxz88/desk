@@ -1,8 +1,10 @@
 package com.chenxinzhi.ui.content
 
-import androidx.compose.animation.*
-import androidx.compose.animation.core.*
-import androidx.compose.foundation.*
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
@@ -34,6 +36,7 @@ fun FrameWindowScope.Content(
     state: WindowState,
     exitApplication: () -> Unit,
     lycContent: MutableStateFlow<String>,
+    lycDeskShow: MutableStateFlow<Boolean>,
     content: @Composable FrameWindowScope.() -> Unit = {}
 ) {
 
@@ -139,7 +142,7 @@ fun FrameWindowScope.Content(
         }
         //播放器
         Column(verticalArrangement = Arrangement.Bottom, modifier = Modifier.fillMaxSize()) {
-            MediaPlayer(javaClass.getResource("/music/M500000SFLv10YFDuo.mp3")?.toURI().toString(), isPlayCallback = {
+            MediaPlayer(javaClass.getResource("/music/M500000SFLv10YFDuo.mp3")?.toURI().toString(),lycDeskShow, isPlayCallback = {
                 isPlay = it
             }, processCallback = {
                 process = it

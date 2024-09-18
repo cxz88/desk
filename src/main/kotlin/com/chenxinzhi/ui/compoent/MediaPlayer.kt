@@ -1,5 +1,6 @@
 package com.chenxinzhi.ui.compoent
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
@@ -19,10 +20,9 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.*
 import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.input.pointer.PointerEventType
@@ -30,6 +30,7 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -42,6 +43,7 @@ import com.chenxinzhi.sqlservice.FuncEnum
 import com.chenxinzhi.sqlservice.getByKey
 import com.chenxinzhi.sqlservice.updateByKey
 import com.chenxinzhi.ui.style.globalStyle
+import com.chenxinzhi.utils.antialias
 import com.chenxinzhi.utils.toComposePath
 import com.chenxinzhi.viewmodel.media.MediaPlayerViewModel
 import com.chenxinzhi.viewmodel.media.ProcessIndicatorViewModel
@@ -49,13 +51,12 @@ import javafx.application.Platform
 import javafx.scene.media.Media
 import javafx.scene.media.MediaPlayer
 import javafx.util.Duration
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import moe.tlaster.precompose.viewmodel.viewModel
 import org.jetbrains.skia.IRect
 import org.jetbrains.skia.Region
-import kotlin.coroutines.ContinuationInterceptor
 import kotlin.math.min
 import kotlin.math.roundToInt
 
@@ -68,12 +69,14 @@ import kotlin.math.roundToInt
 @Composable
 fun MediaPlayer(
     url: String = "",
+    lycDeskShow: MutableStateFlow<Boolean>,
     mediaPlayerViewModel: MediaPlayerViewModel = viewModel {
         MediaPlayerViewModel()
     },
     isPlayCallback: (Boolean) -> Unit,
     processCallback: (Float) -> Unit,
     currentTimeChange: (Float) -> Unit,
+
     showContent: () -> Unit,
 ) {
     val rememberCoroutineScope = rememberCoroutineScope()
@@ -424,7 +427,7 @@ fun MediaPlayer(
 
             }
 
-            //音量,循环按钮
+            //循环按钮
             Row(
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.Top,
@@ -432,7 +435,9 @@ fun MediaPlayer(
             ) {
 
                 Column(
-                    horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center
+                    modifier = Modifier.width(60.dp).offset(x = (60).dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
                 ) {
                     //动画设置显示隐藏
                     val interactionSource = remember {
@@ -463,12 +468,17 @@ fun MediaPlayer(
                         painterResource("image/ic_play_list.webp"),
                         tint = globalStyle.current.RightControlColor,
                         contentDescription = null,
-                        modifier = Modifier.size(19.dp)
+                        modifier = Modifier.size(20.dp)
                             .hoverable(interactionSource)
+                            .antialias()
                     )
                 }
 
-                Column {
+                Column(
+                    modifier = Modifier.width(60.dp).offset(x = (30).dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
                     //动画设置显示隐藏
                     val interactionSource = remember {
                         MutableInteractionSource()
@@ -498,21 +508,33 @@ fun MediaPlayer(
                         painterResource(mediaPlayerViewModel.playModeList[mediaPlayerViewModel.nowPlayerModel].first),
                         tint = globalStyle.current.RightControlColor,
                         contentDescription = null,
-                        modifier = Modifier.size(19.dp)
+                        modifier = Modifier.size(20.dp)
                             .hoverable(interactionSource)
                             .pointerInput(Unit) {
                                 detectTapGestures {
                                     mediaPlayerViewModel.setNowPlayerModel(mediaPlayerViewModel.nowPlayerModel + 1)
                                 }
-                            }
+                            }.antialias()
                     )
                 }
-                //音量调节
-                Column {
+                //歌词
+                Column(
+                    Modifier.width(60.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
                     //动画设置显示隐藏
                     val interactionSource = remember {
                         MutableInteractionSource()
                     }
+                    remember(mediaPlayerViewModel.showDeskLyc) {
+                        lycDeskShow.value = mediaPlayerViewModel.showDeskLyc
+                    }
+                    val show by lycDeskShow.collectAsState()
+                    remember(show) {
+                        mediaPlayerViewModel.setShowDeskLyc(show)
+                    }
+                    val c by animateColorAsState(if (mediaPlayerViewModel.showDeskLyc) globalStyle.current.RightControlUseColor else globalStyle.current.RightControlColor)
                     val hover by interactionSource.collectIsHoveredAsState()
                     val alpha by animateFloatAsState(
                         if (hover) {
@@ -522,7 +544,7 @@ fun MediaPlayer(
                         }
                     )
                     Text(
-                        mediaPlayerViewModel.playModeList[mediaPlayerViewModel.nowPlayerModel].second,
+                        "${if (mediaPlayerViewModel.showDeskLyc) "关闭" else "打开"}歌词",
                         fontSize = 12.sp,
                         color = globalStyle.current.RightControlColor,
                         textAlign = TextAlign.Center,
@@ -534,18 +556,82 @@ fun MediaPlayer(
                             .background(globalStyle.current.RightControlBackgroundColor)
                             .padding(2.dp)
                     )
-                    Icon(
-                        painterResource(mediaPlayerViewModel.playModeList[mediaPlayerViewModel.nowPlayerModel].first),
-                        tint = globalStyle.current.RightControlColor,
-                        contentDescription = null,
-                        modifier = Modifier.size(19.dp)
-                            .hoverable(interactionSource)
-                            .pointerInput(Unit) {
-                                detectTapGestures {
-                                    mediaPlayerViewModel.setNowPlayerModel(mediaPlayerViewModel.nowPlayerModel + 1)
-                                }
+                    Box(modifier = Modifier.height(20.dp), contentAlignment = Alignment.Center) {
+                        Text(
+                            "词", fontSize = with(LocalDensity.current) {
+                                17.dp.toSp()
+                            }, lineHeight = with(LocalDensity.current) {
+                                20.dp.toSp()
+                            }, modifier = Modifier
+                                .size(20.dp)
+                                .hoverable(interactionSource)
+                                .pointerInput(Unit) {
+                                    detectTapGestures {
+                                        mediaPlayerViewModel.setShowDeskLyc(!mediaPlayerViewModel.showDeskLyc)
+
+                                    }
+                                }.antialias(), color = c, textAlign = TextAlign.Center
+                        )
+                    }
+                }
+                //音量
+                Column(
+//                    Modifier.offset(y = -62.dp).width(20.dp).fillMaxHeight().background(Color(0xff363636)),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+
+                    Box {
+                        //背景
+                        Canvas(modifier = Modifier.width(26.dp)) {
+                            val path = Path().apply {
+                                // 定义一个带有圆角的矩形
+                                addRoundRect(
+                                    roundRect = RoundRect(
+                                        0f,
+                                        -100.dp.toPx(),
+                                        size.width,
+                                        0f,
+                                        cornerRadius = CornerRadius(5.dp.toPx(), 5.dp.toPx())
+                                    )
+                                )
                             }
-                    )
+                            // 填充矩形
+                            drawPath(
+                                path = path,
+                                color = Color(0xff363636),
+                                style = Fill
+                            )
+                            //再画一个小矩形,用来显示进度
+                            //填充三角形
+                            val pathTriangle = Path().apply {
+                                moveTo(8.dp.toPx(), 0f)
+                                lineTo(size.width - (8.dp.toPx()), 0f)
+                                lineTo(size.width / 2, size.width - (21.dp.toPx()))
+                                close()
+                            }
+                            drawPath(
+                                path = pathTriangle,
+                                color = Color(0xff363636),
+                                style = Fill
+                            )
+
+
+                        }
+
+
+                    }
+//                    Icon(
+//                        painterResource("image/ic_song_words.webp"),
+//                        contentDescription = null,
+//                        modifier = Modifier.size(20.dp)
+//                            .pointerInput(Unit) {
+//                                detectTapGestures {
+//                                    mediaPlayerViewModel.setShowDeskLyc(!mediaPlayerViewModel.showDeskLyc)
+//
+//                                }
+//                            }.antialias()
+//                    )
                 }
 
 

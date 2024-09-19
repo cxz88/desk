@@ -37,8 +37,7 @@ fun RoundedPolygon.toComposePath() =
     Path().apply { pathFromCubic(this, cubics) }
 
 
-// Code from androidx.graphics.shapes.RoundedPolygon.toPath, which is only available for the Android
-// target -- and returns an Android Path rather than a Compose Path.
+
 
 private fun pathFromCubic(path: Path, cubics: List<Cubic>) {
     var first = true

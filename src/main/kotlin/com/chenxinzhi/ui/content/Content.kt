@@ -60,7 +60,7 @@ fun FrameWindowScope.Content(
 
 
     ) {
-        var show by remember { mutableStateOf(false) }
+        var show by remember { mutableStateOf(true) }
         GlobalStyle.backgroundTopLeftColorChange = if (show) {
             Color(0xff2b2b2b)
         } else {

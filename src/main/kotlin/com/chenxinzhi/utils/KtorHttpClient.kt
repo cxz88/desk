@@ -34,9 +34,9 @@ object KtorHttpClient {
 
     suspend inline fun <reified T> getAndFallBack(
 
-        fallbackKuWoResponse: KuWoResponse<T> = KuWoResponse(),
+        fallbackKuWoResponse: T? = null,
         builder: HttpRequestBuilder.() -> Unit,
-    ): KuWoResponse<T> {
+    ): T? {
         return try {
             CLIENT.get(builder)
                 .body()

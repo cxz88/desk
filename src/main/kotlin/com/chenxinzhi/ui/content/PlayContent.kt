@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.FrameWindowScope
+import com.chenxinzhi.api.Api
 import com.chenxinzhi.ui.style.GlobalStyle
 import com.chenxinzhi.ui.style.globalStyle
 import com.chenxinzhi.viewmodel.content.PlayContentViewModel
@@ -63,6 +64,9 @@ fun FrameWindowScope.PlayContent(
 
     ) {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopEnd) {
+        LaunchedEffect(Unit){
+            println(Api.page("带我")?.abslist?.forEach(::println))
+        }
         content()
         AnimatedVisibility(
             show, enter =

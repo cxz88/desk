@@ -4,9 +4,10 @@ import com.chenxinzhi.model.base.KuWoResponse
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
-import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
+import io.ktor.http.*
+import io.ktor.serialization.kotlinx.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 
@@ -18,14 +19,22 @@ import kotlinx.serialization.json.Json
 object KtorHttpClient {
     val CLIENT = HttpClient(CIO) {
         install(ContentNegotiation) {
+
             json(Json {
                 prettyPrint = true
                 isLenient = true
                 ignoreUnknownKeys = true
             })
-        }
-        install(DefaultRequest) {
-            url("https://www.kuwo.cn/openapi/v1/www/")
+            register(
+                ContentType.Text.Plain, KotlinxSerializationConverter(
+                    Json {
+                        prettyPrint = true
+                        isLenient = true
+                        ignoreUnknownKeys = true
+                    }
+                )
+            )
+
         }
 
 
@@ -33,16 +42,19 @@ object KtorHttpClient {
 
 
     suspend inline fun <reified T> getAndFallBack(
-
-        fallbackKuWoResponse: T? = null,
+        fallbackKuWoResponse: T?,
         builder: HttpRequestBuilder.() -> Unit,
     ): T? {
+
+
         return try {
             CLIENT.get(builder)
                 .body()
         } catch (e: Exception) {
             fallbackKuWoResponse
         }
+
+
     }
 
     suspend inline fun <reified T> postAndFallBack(

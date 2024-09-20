@@ -20,6 +20,8 @@ repositories {
 
 dependencies {
     implementation("app.cash.sqldelight:sqlite-driver:2.0.2")
+    runtimeOnly("org.jetbrains.kotlin:kotlin-reflect:2.0.20")
+
     // Note, if you develop a library, you should use compose.desktop.common.
     // compose.desktop.currentOs should be used in launcher-sourceSet
     // (in a separate module for demo project and in testMain).

@@ -16,7 +16,7 @@ object Api {
 
     suspend fun search(key: String): KuWoResponse<List<String>> = withContext(Dispatchers.IO) {
         KtorHttpClient.getAndFallBack(KuWoResponse()) {
-            url("search/searchKey")
+            url("https://www.kuwo.cn/openapi/v1/www/search/searchKey")
             parameter("key", key)
 
         }!!
@@ -24,7 +24,7 @@ object Api {
 
     suspend fun page(key: String, pn: Int = 0, rn: Int = 20): SearchList? = withContext(Dispatchers.IO) {
         KtorHttpClient.getAndFallBack<SearchList?>(null) {
-            url("search/searchMusicBykeyWord")
+            url("https://www.kuwo.cn/search/searchMusicBykeyWord")
             parameter("all", key)
             parameter("ft", "music")
             parameter("encoding", "utf8")

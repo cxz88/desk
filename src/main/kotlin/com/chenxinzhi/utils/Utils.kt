@@ -37,8 +37,6 @@ fun RoundedPolygon.toComposePath() =
     Path().apply { pathFromCubic(this, cubics) }
 
 
-
-
 private fun pathFromCubic(path: Path, cubics: List<Cubic>) {
     var first = true
     path.rewind()
@@ -70,7 +68,7 @@ fun Modifier.addMove(state: WindowState) =
             var posX = 0.dp
             var posY = 0.dp
             while (true) {
-                val awaitPointerEvent = awaitPointerEvent()
+                var awaitPointerEvent = awaitPointerEvent()
                 if (awaitPointerEvent.changes[0].isConsumed) {
                     continue
                 }
@@ -86,24 +84,30 @@ fun Modifier.addMove(state: WindowState) =
                         posX = position.x
                         posY = position.y
                     }
-                } else if (awaitPointerEvent.type == PointerEventType.Move) {
-                    val nativeEvent = awaitPointerEvent.nativeEvent
-                    if (nativeEvent is MouseEvent) {
-                        if (nativeEvent.modifiersEx != MouseEvent.BUTTON1_DOWN_MASK) {
-                            continue
+                    b@ while (true) {
+                        awaitPointerEvent = awaitPointerEvent()
+                        if (awaitPointerEvent.type == PointerEventType.Move||awaitPointerEvent.type == PointerEventType.Exit||awaitPointerEvent.type == PointerEventType.Enter) {
+                            val nativeEvent = awaitPointerEvent.nativeEvent
+                            if (nativeEvent is MouseEvent) {
+                                if (nativeEvent.modifiersEx != MouseEvent.BUTTON1_DOWN_MASK) {
+                                    continue
+                                }
+                                val xOnScreen = nativeEvent.xOnScreen
+                                val yOnScreen = nativeEvent.yOnScreen
+                                val xOffset = xOnScreen - preXOnScreen
+                                val yOffset = yOnScreen - preYOnScreen
+                                state.position =
+                                    WindowPosition(
+                                        posX + xOffset.sp.toDp() + startX.sp.toDp(),
+                                        posY + yOffset.sp.toDp() + startY.sp.toDp()
+                                    )
+                            }
+
+
+                        } else {
+                            break@b
                         }
-                        val xOnScreen = nativeEvent.xOnScreen
-                        val yOnScreen = nativeEvent.yOnScreen
-                        val xOffset = xOnScreen - preXOnScreen
-                        val yOffset = yOnScreen - preYOnScreen
-                        state.position =
-                            WindowPosition(
-                                posX + xOffset.sp.toDp() + startX.sp.toDp(),
-                                posY + yOffset.sp.toDp() + startY.sp.toDp()
-                            )
                     }
-
-
                 }
             }
         }
@@ -113,5 +117,5 @@ fun Modifier.addMove(state: WindowState) =
 
 fun Modifier.antialias() = graphicsLayer {
     // 开启抗锯齿
-    renderEffect= BlurEffect(0f,0f, TileMode.Decal)
+    renderEffect = BlurEffect(0f, 0f, TileMode.Decal)
 }

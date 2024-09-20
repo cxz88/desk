@@ -1,9 +1,10 @@
 package com.chenxinzhi.api
 
-import com.chenxinzhi.model.base.Response
-import com.chenxinzhi.model.search.Search
+import com.chenxinzhi.model.base.KuWoResponse
 import com.chenxinzhi.utils.KtorHttpClient
 import io.ktor.client.request.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
  * @description
@@ -12,10 +13,12 @@ import io.ktor.client.request.*
  */
 object Api {
 
-    suspend fun search(): Response<Search> = KtorHttpClient.getOrDefault {
-        url("search1/suggest")
-        parameter("keywords", "海阔天空")
+    suspend fun search(key: String): KuWoResponse<List<String>> = withContext(Dispatchers.IO){
+        KtorHttpClient.getAndFallBack {
+            url("search/searchKey")
+            parameter("key", key)
 
+        }
     }
 
 

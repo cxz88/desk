@@ -20,9 +20,10 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.*
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
-import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.input.pointer.PointerEventType
@@ -575,64 +576,64 @@ fun MediaPlayer(
                     }
                 }
                 //音量
-                Column(
-//                    Modifier.offset(y = -62.dp).width(20.dp).fillMaxHeight().background(Color(0xff363636)),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-
-                    Box {
-                        //背景
-                        Canvas(modifier = Modifier.width(26.dp)) {
-                            val path = Path().apply {
-                                // 定义一个带有圆角的矩形
-                                addRoundRect(
-                                    roundRect = RoundRect(
-                                        0f,
-                                        -100.dp.toPx(),
-                                        size.width,
-                                        0f,
-                                        cornerRadius = CornerRadius(5.dp.toPx(), 5.dp.toPx())
-                                    )
-                                )
-                            }
-                            // 填充矩形
-                            drawPath(
-                                path = path,
-                                color = Color(0xff363636),
-                                style = Fill
-                            )
-                            //再画一个小矩形,用来显示进度
-                            //填充三角形
-                            val pathTriangle = Path().apply {
-                                moveTo(8.dp.toPx(), 0f)
-                                lineTo(size.width - (8.dp.toPx()), 0f)
-                                lineTo(size.width / 2, size.width - (21.dp.toPx()))
-                                close()
-                            }
-                            drawPath(
-                                path = pathTriangle,
-                                color = Color(0xff363636),
-                                style = Fill
-                            )
-
-
-                        }
-
-
-                    }
-//                    Icon(
-//                        painterResource("image/ic_song_words.webp"),
-//                        contentDescription = null,
-//                        modifier = Modifier.size(20.dp)
-//                            .pointerInput(Unit) {
-//                                detectTapGestures {
-//                                    mediaPlayerViewModel.setShowDeskLyc(!mediaPlayerViewModel.showDeskLyc)
+//                Column(
+////                    Modifier.offset(y = -62.dp).width(20.dp).fillMaxHeight().background(Color(0xff363636)),
+//                    horizontalAlignment = Alignment.CenterHorizontally,
+//                    verticalArrangement = Arrangement.Center
+//                ) {
 //
-//                                }
-//                            }.antialias()
-//                    )
-                }
+//                    Box {
+//                        //背景
+//                        Canvas(modifier = Modifier.width(26.dp)) {
+//                            val path = Path().apply {
+//                                // 定义一个带有圆角的矩形
+//                                addRoundRect(
+//                                    roundRect = RoundRect(
+//                                        0f,
+//                                        -100.dp.toPx(),
+//                                        size.width,
+//                                        0f,
+//                                        cornerRadius = CornerRadius(5.dp.toPx(), 5.dp.toPx())
+//                                    )
+//                                )
+//                            }
+//                            // 填充矩形
+//                            drawPath(
+//                                path = path,
+//                                color = Color(0xff363636),
+//                                style = Fill
+//                            )
+//                            //再画一个小矩形,用来显示进度
+//                            //填充三角形
+//                            val pathTriangle = Path().apply {
+//                                moveTo(8.dp.toPx(), 0f)
+//                                lineTo(size.width - (8.dp.toPx()), 0f)
+//                                lineTo(size.width / 2, size.width - (21.dp.toPx()))
+//                                close()
+//                            }
+//                            drawPath(
+//                                path = pathTriangle,
+//                                color = Color(0xff363636),
+//                                style = Fill
+//                            )
+//
+//
+//                        }
+//
+//
+//                    }
+////                    Icon(
+////                        painterResource("image/ic_song_words.webp"),
+////                        contentDescription = null,
+////                        modifier = Modifier.size(20.dp)
+////                            .pointerInput(Unit) {
+////                                detectTapGestures {
+////                                    mediaPlayerViewModel.setShowDeskLyc(!mediaPlayerViewModel.showDeskLyc)
+////
+////                                }
+////                            }.antialias()
+////                    )
+//                }
 
 
             }

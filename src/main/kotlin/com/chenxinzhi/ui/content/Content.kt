@@ -8,14 +8,16 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
-import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.FrameWindowScope
 import androidx.compose.ui.window.WindowState
@@ -39,16 +41,26 @@ fun FrameWindowScope.Content(
     lycDeskShow: MutableStateFlow<Boolean>,
     content: @Composable FrameWindowScope.() -> Unit = {}
 ) {
-
+    val current = LocalFocusManager.current
     Box(
         modifier = Modifier.clip(shape = RoundedCornerShape(10.dp))
             .border(.01.dp, color = Color(0x33ffffff), RoundedCornerShape(10.dp)).background(
                 color = GlobalStyle.backgroundColor
-            ).fillMaxWidth()
+            ).fillMaxWidth().pointerInput(Unit) {
+                awaitPointerEventScope {
+                    while (true) {
+                        val awaitPointerEvent = awaitPointerEvent(PointerEventPass.Final)
+                        if (!awaitPointerEvent.changes[0].isConsumed && awaitPointerEvent.type == PointerEventType.Press) {
+                            current.clearFocus()
+                        }
+                    }
+                }
+
+            }
 
 
     ) {
-        var show by remember { mutableStateOf(true) }
+        var show by remember { mutableStateOf(false) }
         GlobalStyle.backgroundTopLeftColorChange = if (show) {
             Color(0xff2b2b2b)
         } else {
@@ -64,48 +76,50 @@ fun FrameWindowScope.Content(
         var isPlay by remember { mutableStateOf(false) }
         val conRateAni by animateFloatAsState(if (isPlay) conRate else -40f)
         var currentTime by remember { mutableStateOf(0f) }
-        Column {
+        val searchList = remember { MutableStateFlow(listOf<String>()) }
+        val searchTipShow = remember { MutableStateFlow(false) }
+        Column(horizontalAlignment = Alignment.End) {
             Box {
                 Bar(state, exitApplication, rightContent = {
-                    RightBar {
+                    RightBar(searchList, searchTipShow) {
                         androidx.compose.animation.AnimatedVisibility(
                             !show, enter =
                             fadeIn(), exit = fadeOut()
                         ) {
-                            Row(
-                                modifier = Modifier.offset { IntOffset(0, -5.dp.roundToPx()) }.width(400.dp)
-                                    .fillMaxHeight()
-                                    .padding(bottom = 6.dp),
-                                horizontalArrangement = Arrangement.SpaceEvenly,
-                                verticalAlignment = Alignment.Bottom
-                            ) {
-                                Text(
-                                    "个性推荐",
-                                    color = GlobalStyle.textCheckColor,
-                                    fontSize = GlobalStyle.defaultFontSize
-
-                                )
-                                Text(
-                                    "歌单",
-                                    color = GlobalStyle.textUnCheckColor,
-                                    fontSize = GlobalStyle.defaultFontSize
-                                )
-                                Text(
-                                    "排行榜",
-                                    color = GlobalStyle.textUnCheckColor,
-                                    fontSize = GlobalStyle.defaultFontSize
-                                )
-                                Text(
-                                    "歌手",
-                                    color = GlobalStyle.textUnCheckColor,
-                                    fontSize = GlobalStyle.defaultFontSize
-                                )
-                                Text(
-                                    "最新音乐",
-                                    color = GlobalStyle.textUnCheckColor,
-                                    fontSize = GlobalStyle.defaultFontSize
-                                )
-                            }
+//                            Row(
+//                                modifier = Modifier.offset { IntOffset(0, -5.dp.roundToPx()) }.width(400.dp)
+//                                    .fillMaxHeight()
+//                                    .padding(bottom = 6.dp),
+//                                horizontalArrangement = Arrangement.SpaceEvenly,
+//                                verticalAlignment = Alignment.Bottom
+//                            ) {
+//                                Text(
+//                                    "个性推荐",
+//                                    color = GlobalStyle.textCheckColor,
+//                                    fontSize = GlobalStyle.defaultFontSize
+//
+//                                )
+//                                Text(
+//                                    "歌单",
+//                                    color = GlobalStyle.textUnCheckColor,
+//                                    fontSize = GlobalStyle.defaultFontSize
+//                                )
+//                                Text(
+//                                    "排行榜",
+//                                    color = GlobalStyle.textUnCheckColor,
+//                                    fontSize = GlobalStyle.defaultFontSize
+//                                )
+//                                Text(
+//                                    "歌手",
+//                                    color = GlobalStyle.textUnCheckColor,
+//                                    fontSize = GlobalStyle.defaultFontSize
+//                                )
+//                                Text(
+//                                    "最新音乐",
+//                                    color = GlobalStyle.textUnCheckColor,
+//                                    fontSize = GlobalStyle.defaultFontSize
+//                                )
+//                            }
                         }
 
                     }
@@ -138,17 +152,23 @@ fun FrameWindowScope.Content(
 
                 }
             }
-            PlayContent(content, show, isPlay, currentTime, conRateAni,lycContent)
+            PlayContent(content, show, isPlay, currentTime, conRateAni, lycContent, searchList, searchTipShow)
+
         }
         //播放器
         Column(verticalArrangement = Arrangement.Bottom, modifier = Modifier.fillMaxSize()) {
-            MediaPlayer(javaClass.getResource("/music/M500000SFLv10YFDuo.mp3")?.toURI().toString(),lycDeskShow, isPlayCallback = {
-                isPlay = it
-            }, processCallback = {
-                process = it
-            }, currentTimeChange = {
-                currentTime = it
-            }) { show = !show }
+            MediaPlayer(
+                javaClass.getResource("/music/M500000SFLv10YFDuo.mp3")?.toURI().toString(),
+                lycDeskShow,
+                isPlayCallback = {
+                    isPlay = it
+                },
+                processCallback = {
+                    process = it
+                },
+                currentTimeChange = {
+                    currentTime = it
+                }) { show = !show }
         }
 
     }

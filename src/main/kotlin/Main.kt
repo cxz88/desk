@@ -7,7 +7,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.*
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
-import com.chenxinzhi.api.Api
 import com.chenxinzhi.repository.Database
 import com.chenxinzhi.sqlservice.FuncEnum
 import com.chenxinzhi.sqlservice.getByKey
@@ -32,9 +31,6 @@ fun main() =
         val lycContent = remember { MutableStateFlow("") }
         val lycDeskShow = remember { MutableStateFlow(true) }
         val c = rememberCoroutineScope()
-        c.launch {
-            println(Api.search())
-        }
         val ldShow by lycDeskShow.collectAsState()
         try {
             Database.Schema.create(sqlDriver)

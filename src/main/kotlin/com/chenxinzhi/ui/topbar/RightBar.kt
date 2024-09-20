@@ -1,6 +1,7 @@
 package com.chenxinzhi.ui.topbar
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -15,6 +16,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
@@ -22,10 +25,17 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.chenxinzhi.api.Api
 import com.chenxinzhi.ui.style.globalStyle
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
-fun RowScope.RightBar(content: @Composable () -> Unit) {
+fun RowScope.RightBar(
+    searchList: MutableStateFlow<List<String>>,
+    showSearchTip: MutableStateFlow<Boolean>,
+    content: @Composable () -> Unit
+) {
     content()
     Row(
         modifier = Modifier.offset { IntOffset(0, 0) }.weight(1f).fillMaxHeight().padding(bottom = 6.dp),
@@ -43,6 +53,23 @@ fun RowScope.RightBar(content: @Composable () -> Unit) {
                     .width(150.dp).height(25.dp).background(globalStyle.current.searchColor)
                     .padding(start = 5.dp, end = 6.dp), verticalAlignment = Alignment.CenterVertically
             ) {
+                val searchKey = remember {
+                    MutableStateFlow("")
+                }
+                LaunchedEffect(Unit) {
+                    searchKey.collectLatest {
+                        //发送网络请求更新
+                        searchList.value = (Api.search(it).data ?: listOf()).map { str ->
+                            try {
+                                str.substring(8, str.indexOf("SNUM"))
+                            } catch (e: Exception) {
+                                ""
+                            }
+                        }
+
+
+                    }
+                }
                 Icon(
                     Icons.Default.Search,
                     contentDescription = null,
@@ -50,6 +77,7 @@ fun RowScope.RightBar(content: @Composable () -> Unit) {
                     modifier = Modifier
                         .size(20.dp)
                 )
+
                 Spacer(modifier = Modifier.width(2.dp))
                 CompositionLocalProvider(
                     LocalTextSelectionColors provides TextSelectionColors(
@@ -57,6 +85,7 @@ fun RowScope.RightBar(content: @Composable () -> Unit) {
                         backgroundColor = Color(0xff668bb1)
                     )
                 ) {
+                    val focusRequester = remember { FocusRequester() }
                     BasicTextField(
 //                leadingIcon = {
 //                    Icon(
@@ -67,9 +96,14 @@ fun RowScope.RightBar(content: @Composable () -> Unit) {
 //                            .size(20.dp)
 //                    )
 //                },
+                        modifier = Modifier.onFocusChanged {
+                            showSearchTip.value = it.isFocused
+                        },
                         value = searchText,
                         onValueChange = {
                             searchText = it
+                            //搜索
+                            searchKey.value = it
                         },
                         singleLine = true,
                         maxLines = 1,
@@ -96,11 +130,14 @@ fun RowScope.RightBar(content: @Composable () -> Unit) {
             modifier = Modifier.offset { IntOffset(0, -6.dp.roundToPx()) }.fillMaxHeight(),
             verticalAlignment = Alignment.Bottom
         ) {
+//            val focusManager = LocalFocusManager.current
             Icon(
                 Icons.Outlined.Settings,
                 contentDescription = null,
                 tint = globalStyle.current.topBarRightColor,
-                modifier = Modifier.size(19.dp)
+                modifier = Modifier.size(19.dp).clickable {
+//                    focusManager.clearFocus()
+                }
             )
             Box(modifier = Modifier.width(16.dp))
             Icon(

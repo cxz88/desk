@@ -6,15 +6,19 @@ import androidx.compose.animation.core.*
 import androidx.compose.animation.slideIn
 import androidx.compose.animation.slideOut
 import androidx.compose.foundation.*
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Size
@@ -23,9 +27,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -47,12 +55,14 @@ fun FrameWindowScope.PlayContent(
     currentTime: Float,
     conRateAni: Float,
     lycContent: MutableStateFlow<String>,
+    searchList: MutableStateFlow<List<String>>,
+    searchTipShow: MutableStateFlow<Boolean>,
     playContentViewModel: PlayContentViewModel = viewModel {
         PlayContentViewModel()
     },
 
     ) {
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopEnd) {
         content()
         AnimatedVisibility(
             show, enter =
@@ -210,6 +220,50 @@ fun FrameWindowScope.PlayContent(
 
                         }
                     }
+                }
+            }
+        }
+        //搜索框
+        val showTip by searchTipShow.collectAsState()
+        val ap by animateFloatAsState(if (showTip) 1f else 0f)
+        Box(
+            modifier = Modifier.graphicsLayer {
+                alpha = ap
+            }.clip(RoundedCornerShape(8.dp)).height(300.dp).width(350.dp)
+                .background(Color(0xff363636))
+        ) {
+
+            val searTip by searchList.collectAsState()
+            Column(modifier = Modifier.padding(vertical = 10.dp), verticalArrangement = Arrangement.Center) {
+                searTip.filter { it.isNotBlank() }.forEachIndexed { index, item ->
+                    val interactionSource = remember { MutableInteractionSource() }
+                    val collectIsHoveredAsState by interactionSource.collectIsHoveredAsState()
+                    val bg by animateColorAsState(
+                        if (collectIsHoveredAsState) {
+                            Color(0xff333333)
+                        } else {
+                            Color.Transparent
+                        }
+                    , tween(1, easing = LinearEasing)
+                    )
+                    BasicText(
+                        item,
+                        style = TextStyle(
+                            fontSize = 14.sp,
+                            lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.None),
+                            lineHeight = with(LocalDensity.current){
+                                24.dp.toSp()
+                            },
+                        ),
+                        modifier = Modifier.height(28.dp).fillMaxWidth().background(bg).pointerHoverIcon(PointerIcon.Hand)
+                            .hoverable(interactionSource)
+                            .padding(horizontal = 10.dp)
+                        ,
+                        overflow = TextOverflow.Ellipsis,
+                        color = {
+                            Color(0xffb9b9b9)
+                        },
+                    )
                 }
             }
         }

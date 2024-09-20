@@ -1,6 +1,6 @@
 package com.chenxinzhi.utils
 
-import com.chenxinzhi.model.base.Response
+import com.chenxinzhi.model.base.KuWoResponse
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
@@ -25,17 +25,35 @@ object KtorHttpClient {
             })
         }
         install(DefaultRequest) {
-            url("http://127.0.0.1:3000/")
+            url("https://www.kuwo.cn/openapi/v1/www/")
         }
 
 
     }
 
-    suspend inline fun <reified T> getOrDefault(builder: HttpRequestBuilder.() -> Unit): Response<T> {
+
+    suspend inline fun <reified T> getAndFallBack(
+
+        fallbackKuWoResponse: KuWoResponse<T> = KuWoResponse(),
+        builder: HttpRequestBuilder.() -> Unit,
+    ): KuWoResponse<T> {
         return try {
-            CLIENT.get(builder).body()
+            CLIENT.get(builder)
+                .body()
         } catch (e: Exception) {
-            Response(999, null)
+            fallbackKuWoResponse
+        }
+    }
+
+    suspend inline fun <reified T> postAndFallBack(
+        fallbackKuWoResponse: KuWoResponse<T> = KuWoResponse(),
+        builder: HttpRequestBuilder.() -> Unit,
+    ): KuWoResponse<T> {
+        return try {
+            CLIENT.post(builder)
+                .body()
+        } catch (e: Exception) {
+            fallbackKuWoResponse
         }
     }
 }

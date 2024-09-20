@@ -64,7 +64,7 @@ fun FrameWindowScope.PlayContent(
 
     ) {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopEnd) {
-        LaunchedEffect(Unit){
+        LaunchedEffect(Unit) {
             println(Api.page("带我")?.abslist?.forEach(::println))
         }
         content()
@@ -229,7 +229,9 @@ fun FrameWindowScope.PlayContent(
         }
         //搜索框
         val showTip by searchTipShow.collectAsState()
-        val ap by animateFloatAsState(if (showTip) 1f else 0f)
+        val searTip by searchList.collectAsState()
+        val s = searTip.filter { it.isNotBlank() }
+        val ap by animateFloatAsState(if (showTip && s.isNotEmpty()) 1f else 0f)
         Box(
             modifier = Modifier.graphicsLayer {
                 alpha = ap
@@ -237,9 +239,9 @@ fun FrameWindowScope.PlayContent(
                 .background(Color(0xff363636))
         ) {
 
-            val searTip by searchList.collectAsState()
+
             Column(modifier = Modifier.padding(vertical = 10.dp), verticalArrangement = Arrangement.Center) {
-                searTip.filter { it.isNotBlank() }.forEachIndexed { index, item ->
+                s.forEachIndexed { index, item ->
                     val interactionSource = remember { MutableInteractionSource() }
                     val collectIsHoveredAsState by interactionSource.collectIsHoveredAsState()
                     val bg by animateColorAsState(
@@ -247,22 +249,24 @@ fun FrameWindowScope.PlayContent(
                             Color(0xff333333)
                         } else {
                             Color.Transparent
-                        }
-                    , tween(1, easing = LinearEasing)
+                        }, tween(1, easing = LinearEasing)
                     )
                     BasicText(
                         item,
                         style = TextStyle(
                             fontSize = 14.sp,
-                            lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.None),
-                            lineHeight = with(LocalDensity.current){
+                            lineHeightStyle = LineHeightStyle(
+                                LineHeightStyle.Alignment.Center,
+                                LineHeightStyle.Trim.None
+                            ),
+                            lineHeight = with(LocalDensity.current) {
                                 24.dp.toSp()
                             },
                         ),
-                        modifier = Modifier.height(28.dp).fillMaxWidth().background(bg).pointerHoverIcon(PointerIcon.Hand)
+                        modifier = Modifier.height(28.dp).fillMaxWidth().background(bg)
+                            .pointerHoverIcon(PointerIcon.Hand)
                             .hoverable(interactionSource)
-                            .padding(horizontal = 10.dp)
-                        ,
+                            .padding(horizontal = 10.dp),
                         overflow = TextOverflow.Ellipsis,
                         color = {
                             Color(0xffb9b9b9)

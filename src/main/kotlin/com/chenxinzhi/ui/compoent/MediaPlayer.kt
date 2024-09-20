@@ -557,7 +557,7 @@ fun MediaPlayer(
                             .background(globalStyle.current.RightControlBackgroundColor)
                             .padding(2.dp)
                     )
-                    Box(modifier = Modifier.height(20.dp), contentAlignment = Alignment.Center) {
+                    Box(modifier = Modifier.height(20.dp).offset(y = 1.dp), contentAlignment = Alignment.Center) {
                         Text(
                             "词", fontSize = with(LocalDensity.current) {
                                 17.dp.toSp()

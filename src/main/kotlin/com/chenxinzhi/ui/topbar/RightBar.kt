@@ -5,6 +5,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.Icon
@@ -22,6 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -105,6 +108,14 @@ fun RowScope.RightBar(
                             //搜索
                             searchKey.value = it
                         },
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            imeAction = ImeAction.Done // 设置 IME 动作为 Done (回车)
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onDone = {
+                                //发送请求，并为
+                            }
+                        ),
                         singleLine = true,
                         maxLines = 1,
                         cursorBrush = SolidColor(Color.White),

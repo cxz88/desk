@@ -4,6 +4,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.DrawerDefaults.shape
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -44,8 +46,10 @@ fun deskLyc(lycContent: MutableStateFlow<String>, lycDeskShow: MutableStateFlow<
         twoShow = false
     }
     val bg by animateColorAsState(if (collectIsHoveredAsState || twoShow) globalStyle.current.deskLycBackGround else Color.Transparent)
+    val bgBorder by animateColorAsState(if (collectIsHoveredAsState || twoShow) Color(0x22ffffff) else Color.Transparent)
     val ap by animateFloatAsState(if (collectIsHoveredAsState || twoShow) 1f else 0f)
     Box(modifier = Modifier
+        .border(0.001.dp, bgBorder, RoundedCornerShape(8.dp))
         .graphicsLayer {
             shape = RoundedCornerShape(8.dp)
             clip = true

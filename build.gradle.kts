@@ -68,6 +68,7 @@ compose.desktop {
             windows {
                 shortcut = true
             }
+            modules("java.sql")
         }
     }
 

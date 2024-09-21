@@ -22,6 +22,8 @@ object KtorHttpClient {
         install(ContentNegotiation) {
             install(HttpTimeout) {
                 requestTimeoutMillis = 60000
+                connectTimeoutMillis = 60000
+                socketTimeoutMillis = 60000
             }
             json(Json {
                 prettyPrint = true

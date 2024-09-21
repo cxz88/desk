@@ -36,12 +36,26 @@ fun SearchListContent(searchStr: String, musicId: MutableStateFlow<String>) {
     val scrollState = remember(searchStr) {
         LazyListState()
     }
-    var loadedList by remember(searchStr) { mutableStateOf(listOf<Abslist>()) }
+    val loadedList = remember(searchStr) { mutableStateListOf<Abslist>() }
     Box(modifier = Modifier.fillMaxSize().padding(bottom = 62.dp), contentAlignment = Alignment.Center) {
         LaunchedEffect(searchStr) {
             //显示加载动画,进行网络数据加载
-            loadedList = Api.page(searchStr)?.abslist ?: listOf()
+            var count = 0
+            val s = Api.page(searchStr,count++)
+            loadedList += s?.abslist ?: listOf()
             loading = false
+            s?.let {
+                while (it.tOTAL.toInt() > loadedList.size){
+                    val s1 = Api.page(searchStr,count++)
+                    val abslists: List<Abslist> = s1?.abslist ?: listOf()
+                    if (abslists.isEmpty()) {
+                        break
+                    }
+                    loadedList += abslists
+
+                }
+            }
+
         }
         AnimatedContent(loading) {
             if (it) {
@@ -111,13 +125,13 @@ fun SearchListContent(searchStr: String, musicId: MutableStateFlow<String>) {
                                                                 "/120/",
                                                                 "/1000/"
                                                             )
-                                                        }else{
+                                                        } else {
                                                             "https://img2.kuwo.cn/star/albumcover/${abs.webAlbumpicShort}".replace(
                                                                 "/120/",
                                                                 "/1000/"
                                                             )
                                                         }
-                                
+
                                                     },${abs.nAME},${abs.aRTIST}"
                                             })
                                         }) {

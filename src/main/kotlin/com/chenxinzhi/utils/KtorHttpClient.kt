@@ -4,6 +4,7 @@ import com.chenxinzhi.model.base.KuWoResponse
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.http.*
@@ -19,7 +20,9 @@ import kotlinx.serialization.json.Json
 object KtorHttpClient {
     val CLIENT = HttpClient(CIO) {
         install(ContentNegotiation) {
-
+            install(HttpTimeout) {
+                requestTimeoutMillis = 60000
+            }
             json(Json {
                 prettyPrint = true
                 isLenient = true

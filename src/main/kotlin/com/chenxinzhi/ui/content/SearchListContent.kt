@@ -106,10 +106,18 @@ fun SearchListContent(searchStr: String, musicId: MutableStateFlow<String>) {
                                                 f.clearFocus()
                                                 musicId.value =
                                                     "${abs.dCTARGETID},${
-                                                        "https://img2.kuwo.cn/star/albumcover/${abs.webAlbumpicShort}".replace(
-                                                            "/120/",
-                                                            "/1000/"
-                                                        )
+                                                        if (abs.webAlbumpicShort.isBlank()) {
+                                                            "https://img1.kuwo.cn/star/starheads/${abs.webArtistpicShort}".replace(
+                                                                "/120/",
+                                                                "/1000/"
+                                                            )
+                                                        }else{
+                                                            "https://img2.kuwo.cn/star/albumcover/${abs.webAlbumpicShort}".replace(
+                                                                "/120/",
+                                                                "/1000/"
+                                                            )
+                                                        }
+                                
                                                     },${abs.nAME},${abs.aRTIST}"
                                             })
                                         }) {

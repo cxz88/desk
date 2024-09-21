@@ -104,11 +104,13 @@ fun MediaPlayer(
     DisposableEffect(url) {
         rememberCoroutineScope.launch {
             if (url.isBlank()) {
+                mediaPlayerViewModel.isPause = true
                 return@launch
             }
             Api.getMusicUrl(url)?.let {
                 it.data.url.let { url ->
                     if (url.isNotBlank()) {
+                        mediaPlayerViewModel.isPause = false
 //                        if (count > 1) {
 //                            mediaPlayerViewModel.currentTime = 0f
 //                            mediaPlayerViewModel.isPause = false
@@ -117,21 +119,21 @@ fun MediaPlayer(
                             {
                                 val media = javafx.scene.media.Media(url)
                                 mediaPlayerViewModel.mediaPlayerState = javafx.scene.media.MediaPlayer(media).apply {
-                                    volume=mediaPlayerViewModel.volume.toDouble()
+                                    volume = mediaPlayerViewModel.volume.toDouble()
                                     setOnReady {
                                         mediaPlayerViewModel.duration = media.duration.toSeconds().toFloat()
                                         rememberCoroutineScope.launch {
-                                           if (count==0) {
-                                               val v = getByKey(FuncEnum.PLAY_CURRENT_TIME, "0").toFloat()
-                                               mediaPlayerViewModel.currentTime = v
-                                               mediaPlayerViewModel.mediaPlayerState?.seek(
-                                                   Duration.seconds(
-                                                       mediaPlayerViewModel.currentTime.toDouble()
-                                                   )
-                                               )
-                                               val p = getByKey(FuncEnum.PLAY_OR_PAUSE_STATE, "0").toInt()
-                                               mediaPlayerViewModel.isPause = p == 0
-                                           }
+                                            if (count == 0) {
+                                                val v = getByKey(FuncEnum.PLAY_CURRENT_TIME, "0").toFloat()
+                                                mediaPlayerViewModel.currentTime = v
+                                                mediaPlayerViewModel.mediaPlayerState?.seek(
+                                                    Duration.seconds(
+                                                        mediaPlayerViewModel.currentTime.toDouble()
+                                                    )
+                                                )
+                                                val p = getByKey(FuncEnum.PLAY_OR_PAUSE_STATE, "0").toInt()
+                                                mediaPlayerViewModel.isPause = p == 0
+                                            }
                                             mediaPlayerViewModel.isReady = true
                                         }
 
@@ -143,7 +145,7 @@ fun MediaPlayer(
                                         mediaPlayerViewModel.currentTime = newValue.toSeconds().toFloat()
                                     }
                                     setOnEndOfMedia {
-//                                        mediaPlayerViewModel.isPause = true
+                                        mediaPlayerViewModel.isPause = true
 
                                     }
 
@@ -176,7 +178,7 @@ fun MediaPlayer(
                             continue;
                         }
                         mediaPlayerViewModel.showPaint = false
-                        if (event.type== PointerEventType.Press) {
+                        if (event.type == PointerEventType.Press) {
                             closeFlow.value = !closeFlow.value
                         }
                     }
@@ -665,8 +667,8 @@ fun MediaPlayer(
 //                    Modifier.offset(y = -62.dp).width(20.dp).fillMaxHeight().background(Color(0xff363636)),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.offset(x = (-15).dp).width(26.dp)
-                        .fillMaxHeight().pointerInput(Unit){
-                            detectTapGestures {  }
+                        .fillMaxHeight().pointerInput(Unit) {
+                            detectTapGestures { }
                         }
                 ) {
                     var show by remember { mutableStateOf(false) }

@@ -9,6 +9,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.Icon
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.*
@@ -19,12 +20,15 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.chenxinzhi.api.Api
+import com.chenxinzhi.ui.style.GlobalStyle
 import com.chenxinzhi.ui.style.globalStyle
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -34,7 +38,7 @@ fun RowScope.RightBar(
     searchList: MutableStateFlow<List<String>>,
     showSearchTip: MutableStateFlow<Boolean>,
     searchKeyList: MutableStateFlow<String>,
-    closeFill:()->Unit,
+    closeFill: () -> Unit,
     content: @Composable () -> Unit
 ) {
     content()
@@ -113,13 +117,28 @@ fun RowScope.RightBar(
                             onDone = {
                                 //发送请求
                                 closeFill()
-                                searchKeyList.value=searchText
+                                searchKeyList.value = searchText
                             }
                         ),
                         singleLine = true,
                         maxLines = 1,
                         cursorBrush = SolidColor(Color.White),
-                        textStyle = TextStyle(fontSize = 12.sp, color = Color(0xffa5a5a5))
+                        textStyle = TextStyle(fontSize = 12.sp, color = Color(0xffa5a5a5)),
+                        decorationBox = { innerTextField ->
+
+                            if (searchText.isBlank()) {
+                                Text(
+                                    "输入歌曲名搜索",
+                                    color = globalStyle.current.textUnCheckColor,
+                                    fontSize = GlobalStyle.defaultSearchFontSize,
+                                    lineHeight = GlobalStyle.defaultSearchFontSize,
+                                    modifier = Modifier.pointerHoverIcon(PointerIcon.Text)
+                                )
+                            }
+                            innerTextField()
+
+                        }
+
 //                placeholder = {
 //                    Text(
 //                        "搜索",
@@ -137,10 +156,10 @@ fun RowScope.RightBar(
             }
         }
         Box(modifier = Modifier.width(10.dp))
-                Row(
+        Row(
             modifier = Modifier.offset { IntOffset(0, -6.dp.roundToPx()) }.width(180.dp),
             verticalAlignment = Alignment.Bottom
-        ){}
+        ) {}
 // {
 ////            val focusManager = LocalFocusManager.current
 //            Icon(

@@ -24,7 +24,7 @@ object Api {
         }!!
     }
 
-    suspend fun page(key: String, pn: Int = 0, rn: Int = 40): SearchList? = withContext(Dispatchers.IO) {
+    suspend fun page(key: String, pn: Int = 0, rn: Int = 10000): SearchList? = withContext(Dispatchers.IO) {
         KtorHttpClient.getAndFallBack<SearchList?>(null) {
             url("https://www.kuwo.cn/search/searchMusicBykeyWord")
             parameter("all", key)

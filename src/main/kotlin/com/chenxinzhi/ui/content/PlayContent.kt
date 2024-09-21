@@ -216,7 +216,7 @@ fun FrameWindowScope.PlayContent(
                             Box(
                                 modifier = Modifier.weight(1f).fillMaxHeight()
                                     .padding(vertical = 150.dp)
-                                    .padding(end = 150.dp)
+                                    .padding(end = 130.dp)
                             ) {
                                 val brushTop = Brush.verticalGradient(
                                     listOf(
@@ -228,7 +228,9 @@ fun FrameWindowScope.PlayContent(
 
                                 )
                                 LazyColumn(
-                                    modifier = Modifier.fillMaxSize()
+                                    modifier = Modifier
+                                        .padding(end = 20.dp)
+                                        .fillMaxSize()
                                         .drawWithCache {
 
                                             onDrawWithContent {
@@ -245,9 +247,7 @@ fun FrameWindowScope.PlayContent(
                                     item {
                                         Spacer(modifier = Modifier.height(80.dp))
                                     }
-                                    items(playContentViewModel.lycList.size, key = {
-                                        playContentViewModel.lycList[it].first
-                                    }) {
+                                    items(playContentViewModel.lycList.size, ) {
                                         val lycColor by animateColorAsState(if (it == lycIndex) globalStyle.current.lycCheckColor else globalStyle.current.lycColor)
                                         val lycFontsize by animateFloatAsState(if (it == lycIndex) globalStyle.current.lycFontCheckSize else globalStyle.current.lycFontSize)
 
@@ -255,7 +255,7 @@ fun FrameWindowScope.PlayContent(
                                             playContentViewModel.lycList[it].second,
                                             color = lycColor,
                                             fontSize = lycFontsize.sp,
-                                            overflow = TextOverflow.Ellipsis, maxLines = 1
+
                                         )
                                         Spacer(modifier = Modifier.height(8.dp))
                                     }

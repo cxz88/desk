@@ -18,6 +18,7 @@ repositories {
     google()
 }
 
+
 dependencies {
     implementation("app.cash.sqldelight:sqlite-driver:2.0.2")
     runtimeOnly("org.jetbrains.kotlin:kotlin-reflect:2.0.20")
@@ -64,6 +65,9 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Exe)
             packageName = "deskApp"
             packageVersion = "1.0.0"
+            windows {
+                shortcut = true
+            }
         }
     }
 

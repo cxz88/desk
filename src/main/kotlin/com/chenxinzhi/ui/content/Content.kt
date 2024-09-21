@@ -19,11 +19,15 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.FrameWindowScope
 import androidx.compose.ui.window.WindowState
+import com.chenxinzhi.sqlservice.FuncEnum
+import com.chenxinzhi.sqlservice.getByKey
+import com.chenxinzhi.sqlservice.updateByKey
 import com.chenxinzhi.ui.compoent.MediaPlayer
 import com.chenxinzhi.ui.style.GlobalStyle
 import com.chenxinzhi.ui.topbar.Bar
 import com.chenxinzhi.ui.topbar.RightBar
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.runBlocking
 
 /**
  * @description
@@ -79,7 +83,11 @@ fun FrameWindowScope.Content(
         var currentTime by remember { mutableStateOf(0f) }
         val searchList = remember { MutableStateFlow(listOf<String>()) }
         val searchTipShow = remember { MutableStateFlow(false) }
-        val musicId = remember { MutableStateFlow(",,,") }
+        //从数据库中价值
+        val musicId = remember { MutableStateFlow(runBlocking {
+            getByKey(FuncEnum.MUSIC_ID,",,,")
+        }) }
+
         Column(horizontalAlignment = Alignment.End) {
             Box {
                 Bar(state, exitApplication, rightContent = {
@@ -171,6 +179,9 @@ fun FrameWindowScope.Content(
 
         }
         val md by musicId.collectAsState()
+        LaunchedEffect(md) {
+            updateByKey(FuncEnum.MUSIC_ID,md)
+        }
         //播放器
         Column(verticalArrangement = Arrangement.Bottom, modifier = Modifier.fillMaxSize()) {
             MediaPlayer(

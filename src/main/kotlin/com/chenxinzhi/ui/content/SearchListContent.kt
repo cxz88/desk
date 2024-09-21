@@ -41,15 +41,27 @@ fun SearchListContent(searchStr: String, musicId: MutableStateFlow<String>) {
         LaunchedEffect(searchStr) {
             //显示加载动画,进行网络数据加载
             var count = 0
-            val s = Api.page(searchStr,count++)
-            loadedList += s?.abslist ?: listOf()
+            var c = count++
+            val s = Api.page(searchStr, c)
+            var l = s?.abslist ?: listOf()
+            var countW = 0
+            while (l.isEmpty() && countW < 30) {
+                val s2 = Api.page(searchStr, c)
+                l = s2?.abslist ?: listOf()
+                countW++
+            }
+            loadedList += l
             loading = false
             s?.let {
-                while (it.tOTAL.toInt() > loadedList.size){
-                    val s1 = Api.page(searchStr,count++)
-                    val abslists: List<Abslist> = s1?.abslist ?: listOf()
-                    if (abslists.isEmpty()) {
-                        break
+                while (it.tOTAL.toInt() > loadedList.size) {
+                    val pn = count++
+                    val s1 = Api.page(searchStr, pn)
+                    var abslists: List<Abslist> = s1?.abslist ?: listOf()
+                    var countb = 0
+                    while (abslists.isEmpty() && countb < 30) {
+                        val s4 = Api.page(searchStr, pn)
+                        abslists = s4?.abslist ?: listOf()
+                        countb++
                     }
                     loadedList += abslists
 

@@ -16,8 +16,12 @@ import sqlDriver
 
 enum class FuncEnum(val musicFunc: String, val key: String) {
     PLAY_MODEL("playModel", "playModel"),
+    SHOW_DESK_LYC("showDeskLyc", "showDeskLyc"),
     PLAY_CURRENT_TIME("playCurrentTime", "playCurrentTime"),
     PLAY_OR_PAUSE_STATE("playOrPauseState", "playOrPauseState"),
+    MUSIC_ID("musicId", "musicId"),
+    LycPost("LycPost", "LycPost"),
+    mainPost("mainPost", "mainPost"),
 }
 
 
@@ -30,7 +34,11 @@ suspend fun getByKey(func: FuncEnum, defaultValue: String) =
             selectByFuncKey(func.musicFunc, func.key)
                 .executeAsOneOrNull()?.musicValue ?: synchronized(GET_BY_KEY_LOCK) {
                 selectByFuncKey(func.musicFunc, func.key)
-                    .executeAsOneOrNull()?.musicValue ?: insertByFuncKey(func.musicFunc, func.key, defaultValue)
+                    .executeAsOneOrNull()?.musicValue ?: insertByFuncKey(
+                    func.musicFunc,
+                    func.key,
+                    defaultValue
+                )
                     .let {
                         defaultValue
                     }

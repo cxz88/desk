@@ -117,10 +117,12 @@ private fun FrameWindowScope.App(
 
     CompositionLocalProvider(globalStyle provides GlobalStyle) {
         MaterialTheme {
-            Content(state = state, { closeApp() }, lycContent, lycDeskShow) {
+            val searchKey = remember { MutableStateFlow("") }
+            val closeFlow = remember { MutableStateFlow(false) }
+            Content(state = state, { closeApp() }, lycContent, lycDeskShow, searchKey,closeFlow) {
                 Row {
                     LeftContent()
-                    RightContent()
+                    RightContent(searchKey, it)
                 }
             }
 

@@ -3,12 +3,14 @@ package com.chenxinzhi.ui.compoent
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.*
-import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -20,10 +22,9 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.*
 import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.input.pointer.PointerEventType
@@ -40,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.graphics.shapes.CornerRounding
 import androidx.graphics.shapes.RoundedPolygon
+import com.chenxinzhi.api.Api
 import com.chenxinzhi.sqlservice.FuncEnum
 import com.chenxinzhi.sqlservice.getByKey
 import com.chenxinzhi.sqlservice.updateByKey
@@ -48,9 +50,8 @@ import com.chenxinzhi.utils.antialias
 import com.chenxinzhi.utils.toComposePath
 import com.chenxinzhi.viewmodel.media.MediaPlayerViewModel
 import com.chenxinzhi.viewmodel.media.ProcessIndicatorViewModel
-import javafx.application.Platform
-import javafx.scene.media.Media
-import javafx.scene.media.MediaPlayer
+import com.github.panpf.sketch.AsyncImage
+import com.sun.javafx.application.PlatformImpl
 import javafx.util.Duration
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -58,6 +59,7 @@ import kotlinx.coroutines.launch
 import moe.tlaster.precompose.viewmodel.viewModel
 import org.jetbrains.skia.IRect
 import org.jetbrains.skia.Region
+import kotlin.math.abs
 import kotlin.math.min
 import kotlin.math.roundToInt
 
@@ -69,7 +71,7 @@ import kotlin.math.roundToInt
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MediaPlayer(
-    url: String = "",
+    musicId: String = "",
     lycDeskShow: MutableStateFlow<Boolean>,
     mediaPlayerViewModel: MediaPlayerViewModel = viewModel {
         MediaPlayerViewModel()
@@ -77,9 +79,15 @@ fun MediaPlayer(
     isPlayCallback: (Boolean) -> Unit,
     processCallback: (Float) -> Unit,
     currentTimeChange: (Float) -> Unit,
-
+    closeFlow: MutableStateFlow<Boolean>,
     showContent: () -> Unit,
-) {
+
+    ) {
+    val split = musicId.split(",")
+    val url by remember(split) { mutableStateOf(split[0]) }
+    val pic by remember(split) { mutableStateOf(split[1]) }
+    val name by remember(split) { mutableStateOf(split[2]) }
+    val ysj by remember(split) { mutableStateOf(split[3]) }
     val rememberCoroutineScope = rememberCoroutineScope()
     remember(mediaPlayerViewModel.progress) {
         processCallback(mediaPlayerViewModel.progress)
@@ -92,39 +100,70 @@ fun MediaPlayer(
             }
         }
     }
+    var count by remember { mutableStateOf(0) }
     DisposableEffect(url) {
-        Platform.startup {
-            val media = Media(url)
-            mediaPlayerViewModel.mediaPlayerState = MediaPlayer(media).apply {
-                setOnReady {
-                    mediaPlayerViewModel.duration = media.duration.toSeconds().toFloat()
-                    rememberCoroutineScope.launch {
-                        val v = getByKey(FuncEnum.PLAY_CURRENT_TIME, "0").toFloat()
-                        mediaPlayerViewModel.currentTime = v
-                        mediaPlayerViewModel.mediaPlayerState?.seek(Duration.seconds(mediaPlayerViewModel.currentTime.toDouble()))
-                        val p = getByKey(FuncEnum.PLAY_OR_PAUSE_STATE, "0").toInt()
-                        mediaPlayerViewModel.isPause = p == 0
-                        mediaPlayerViewModel.isReady = true
-                    }
+        rememberCoroutineScope.launch {
+            if (url.isBlank()) {
+                return@launch
+            }
+            Api.getMusicUrl(url)?.let {
+                it.data.url.let { url ->
+                    if (url.isNotBlank()) {
+//                        if (count > 1) {
+//                            mediaPlayerViewModel.currentTime = 0f
+//                            mediaPlayerViewModel.isPause = false
+//                        }
+                        PlatformImpl.startup(
+                            {
+                                val media = javafx.scene.media.Media(url)
+                                mediaPlayerViewModel.mediaPlayerState = javafx.scene.media.MediaPlayer(media).apply {
+                                    volume=mediaPlayerViewModel.volume.toDouble()
+                                    setOnReady {
+                                        mediaPlayerViewModel.duration = media.duration.toSeconds().toFloat()
+                                        rememberCoroutineScope.launch {
+                                           if (count==0) {
+                                               val v = getByKey(FuncEnum.PLAY_CURRENT_TIME, "0").toFloat()
+                                               mediaPlayerViewModel.currentTime = v
+                                               mediaPlayerViewModel.mediaPlayerState?.seek(
+                                                   Duration.seconds(
+                                                       mediaPlayerViewModel.currentTime.toDouble()
+                                                   )
+                                               )
+                                               val p = getByKey(FuncEnum.PLAY_OR_PAUSE_STATE, "0").toInt()
+                                               mediaPlayerViewModel.isPause = p == 0
+                                           }
+                                            mediaPlayerViewModel.isReady = true
+                                        }
 
-                }
-                currentTimeProperty().addListener { _, _, newValue ->
-                    if (mediaPlayerViewModel.isWait) {
-                        return@addListener
-                    }
-                    mediaPlayerViewModel.currentTime = newValue.toSeconds().toFloat()
-                }
-                setOnEndOfMedia {
-                    mediaPlayerViewModel.isPause = true
+                                    }
+                                    currentTimeProperty().addListener { _, _, newValue ->
+                                        if (mediaPlayerViewModel.isWait) {
+                                            return@addListener
+                                        }
+                                        mediaPlayerViewModel.currentTime = newValue.toSeconds().toFloat()
+                                    }
+                                    setOnEndOfMedia {
+//                                        mediaPlayerViewModel.isPause = true
 
+                                    }
+
+                                    play()
+                                }
+
+
+                            }, false
+                        )
+                    }
                 }
-                volumeProperty().value = volume
             }
 
-
         }
+
         onDispose {
+            mediaPlayerViewModel.mediaPlayerState?.stop()
             mediaPlayerViewModel.mediaPlayerState?.dispose()
+            mediaPlayerViewModel.mediaPlayerState = null
+            count++
         }
     }
     Box(
@@ -137,6 +176,9 @@ fun MediaPlayer(
                             continue;
                         }
                         mediaPlayerViewModel.showPaint = false
+                        if (event.type== PointerEventType.Press) {
+                            closeFlow.value = !closeFlow.value
+                        }
                     }
                 }
             }
@@ -175,10 +217,13 @@ fun MediaPlayer(
         val musicControlColor = globalStyle.current.musicControlColor
         Box(modifier = Modifier.padding(top = 2.dp)) {
             Row(modifier = Modifier.width(300.dp)) {
-                Image(
-                    painterResource("image/musicPic.jpg"),
+                val s = with(LocalDensity.current) {
+                    42.dp.toPx().roundToInt()
+                }
+                AsyncImage(
+                    pic.replace("/1000/", "/$s/"),
                     contentDescription = null,
-                    contentScale = ContentScale.Crop,
+                    contentScale = ContentScale.None,
                     modifier = Modifier
                         .padding(top = 8.dp, start = 10.dp)
                         .size(42.dp)
@@ -186,39 +231,71 @@ fun MediaPlayer(
                         .pointerHoverIcon(PointerIcon.Hand)
                         .onClick {
                             showContent()
-                        }
+                        },
+                    filterQuality = FilterQuality.High
                 )
                 Box(modifier = Modifier.width(10.dp))
                 Column {
                     Box(modifier = Modifier.height(8.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.height(20.dp)) {
                         Text(
-                            "带我去找夜生活",
+                            name.let {
+                                it.ifBlank {
+                                    "暂无歌曲"
+                                }
+                            },
                             overflow = TextOverflow.Ellipsis,
-                            fontSize = globalStyle.current.mediaPlayerMusicNameSize,
-                            lineHeight = globalStyle.current.mediaPlayerMusicNameSize,
+                            fontSize = with(LocalDensity.current) {
+                                globalStyle.current.mediaPlayerMusicNameSize.value.dp.toSp()
+                            },
+                            lineHeight = with(LocalDensity.current) {
+                                globalStyle.current.mediaPlayerMusicNameSize.value.dp.toSp()
+                            },
                             maxLines = 1,
                             color = globalStyle.current.mediaPlayerMusicNameColor,
-                            textAlign = TextAlign.Center
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.wrapContentHeight().height(with(LocalDensity.current) {
+                                globalStyle.current.mediaPlayerMusicNameSize.toDp() + 2.33.dp
+                            }).offset(y = (-2.33).dp)
+
                         )
                         Box(Modifier.width(2.dp))
                         Text(
-                            "-", fontSize = globalStyle.current.mediaPlayerMusicSingerNameSize,
+                            "-", fontSize = with(LocalDensity.current) {
+                                globalStyle.current.mediaPlayerMusicSingerNameSize.value.dp.toSp()
+                            },
                             color = globalStyle.current.mediaPlayerMusicSingerNameColor,
                             textAlign = TextAlign.Center,
                             maxLines = 1,
-                            lineHeight = globalStyle.current.mediaPlayerMusicSingerNameSize
+                            lineHeight = with(LocalDensity.current) {
+                                globalStyle.current.mediaPlayerMusicSingerNameSize.value.dp.toSp()
+                            },
+                            modifier = Modifier.wrapContentHeight().height(with(LocalDensity.current) {
+                                globalStyle.current.mediaPlayerMusicSingerNameSize.toDp() + 1.55.dp
+                            }).offset(y = (-1.55).dp)
                         )
                         Box(Modifier.width(2.dp))
 
                         Text(
-                            "告五人",
+                            ysj.let {
+                                it.ifBlank {
+                                    "暂无歌手"
+                                }
+                            },
+
                             overflow = TextOverflow.Ellipsis,
                             maxLines = 1,
-                            fontSize = globalStyle.current.mediaPlayerMusicSingerNameSize,
+                            fontSize = with(LocalDensity.current) {
+                                globalStyle.current.mediaPlayerMusicSingerNameSize.value.dp.toSp()
+                            },
                             color = globalStyle.current.mediaPlayerMusicSingerNameColor,
                             textAlign = TextAlign.Center,
-                            lineHeight = globalStyle.current.mediaPlayerMusicSingerNameSize
+                            lineHeight = with(LocalDensity.current) {
+                                globalStyle.current.mediaPlayerMusicSingerNameSize.value.dp.toSp()
+                            },
+                            modifier = Modifier.wrapContentHeight().height(with(LocalDensity.current) {
+                                globalStyle.current.mediaPlayerMusicSingerNameSize.toDp() + 1.55.dp
+                            }).offset(y = (-1.55).dp)
                         )
                     }
                     Box(modifier = Modifier.height(5.dp))
@@ -454,10 +531,14 @@ fun MediaPlayer(
                     )
                     Text(
                         "播放列表",
-                        fontSize = 12.sp,
+                        fontSize = with(LocalDensity.current) {
+                            12.dp.toSp()
+                        },
                         color = globalStyle.current.RightControlColor,
                         textAlign = TextAlign.Center,
-                        lineHeight = 12.sp,
+                        lineHeight = with(LocalDensity.current) {
+                            12.dp.toSp()
+                        },
                         modifier = Modifier
                             .alpha(alpha)
                             .shadow(5.dp, spotColor = Color.White, shape = RoundedCornerShape(4.dp))
@@ -494,10 +575,14 @@ fun MediaPlayer(
                     )
                     Text(
                         mediaPlayerViewModel.playModeList[mediaPlayerViewModel.nowPlayerModel].second,
-                        fontSize = 12.sp,
+                        fontSize = with(LocalDensity.current) {
+                            12.dp.toSp()
+                        },
                         color = globalStyle.current.RightControlColor,
                         textAlign = TextAlign.Center,
-                        lineHeight = 12.sp,
+                        lineHeight = with(LocalDensity.current) {
+                            12.dp.toSp()
+                        },
                         modifier = Modifier
                             .alpha(alpha)
                             .shadow(5.dp, spotColor = Color.White, shape = RoundedCornerShape(4.dp))
@@ -557,7 +642,7 @@ fun MediaPlayer(
                             .background(globalStyle.current.RightControlBackgroundColor)
                             .padding(2.dp)
                     )
-                    Box(modifier = Modifier.height(20.dp).offset(y = 1.dp), contentAlignment = Alignment.Center) {
+                    Box(modifier = Modifier.height(20.dp).offset(y = .5.dp), contentAlignment = Alignment.Center) {
                         Text(
                             "词", fontSize = with(LocalDensity.current) {
                                 17.dp.toSp()
@@ -576,64 +661,109 @@ fun MediaPlayer(
                     }
                 }
                 //音量
-//                Column(
-////                    Modifier.offset(y = -62.dp).width(20.dp).fillMaxHeight().background(Color(0xff363636)),
-//                    horizontalAlignment = Alignment.CenterHorizontally,
-//                    verticalArrangement = Arrangement.Center
-//                ) {
-//
-//                    Box {
-//                        //背景
-//                        Canvas(modifier = Modifier.width(26.dp)) {
-//                            val path = Path().apply {
-//                                // 定义一个带有圆角的矩形
-//                                addRoundRect(
-//                                    roundRect = RoundRect(
-//                                        0f,
-//                                        -100.dp.toPx(),
-//                                        size.width,
-//                                        0f,
-//                                        cornerRadius = CornerRadius(5.dp.toPx(), 5.dp.toPx())
-//                                    )
-//                                )
-//                            }
-//                            // 填充矩形
-//                            drawPath(
-//                                path = path,
-//                                color = Color(0xff363636),
-//                                style = Fill
-//                            )
-//                            //再画一个小矩形,用来显示进度
-//                            //填充三角形
-//                            val pathTriangle = Path().apply {
-//                                moveTo(8.dp.toPx(), 0f)
-//                                lineTo(size.width - (8.dp.toPx()), 0f)
-//                                lineTo(size.width / 2, size.width - (21.dp.toPx()))
-//                                close()
-//                            }
-//                            drawPath(
-//                                path = pathTriangle,
-//                                color = Color(0xff363636),
-//                                style = Fill
-//                            )
-//
-//
-//                        }
-//
-//
-//                    }
-////                    Icon(
-////                        painterResource("image/ic_song_words.webp"),
-////                        contentDescription = null,
-////                        modifier = Modifier.size(20.dp)
-////                            .pointerInput(Unit) {
-////                                detectTapGestures {
-////                                    mediaPlayerViewModel.setShowDeskLyc(!mediaPlayerViewModel.showDeskLyc)
-////
-////                                }
-////                            }.antialias()
-////                    )
-//                }
+                Column(
+//                    Modifier.offset(y = -62.dp).width(20.dp).fillMaxHeight().background(Color(0xff363636)),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.offset(x = (-15).dp).width(26.dp)
+                        .fillMaxHeight().pointerInput(Unit){
+                            detectTapGestures {  }
+                        }
+                ) {
+                    var show by remember { mutableStateOf(false) }
+                    LaunchedEffect(closeFlow.collectAsState().value) {
+                        show = false
+                    }
+
+                    Box(modifier = Modifier.height(12.dp))
+                    Box(contentAlignment = Alignment.TopCenter, modifier = Modifier.height(8.dp)) {
+                        androidx.compose.animation.AnimatedVisibility(
+                            show, enter = fadeIn(tween(50)), exit = fadeOut(
+                                tween(50)
+                            ), modifier = Modifier.width(26.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.TopCenter) {
+                                Canvas(modifier = Modifier.width(26.dp)) {
+                                    val path = Path().apply {
+                                        // 定义一个带有圆角的矩形
+                                        addRoundRect(
+                                            roundRect = RoundRect(
+                                                0f,
+                                                -100.dp.toPx(),
+                                                size.width,
+                                                0f,
+                                                cornerRadius = CornerRadius(5.dp.toPx(), 5.dp.toPx())
+                                            )
+                                        )
+                                    }
+                                    // 填充矩形
+                                    drawPath(
+                                        path = path,
+                                        color = Color(0xff363636),
+                                        style = Fill
+                                    )
+                                    //再画一个小矩形,用来显示进度
+                                    //填充三角形
+                                    val pathTriangle = Path().apply {
+                                        moveTo(8.dp.toPx(), 0f)
+                                        lineTo(size.width - (8.dp.toPx()), 0f)
+                                        lineTo(size.width / 2, size.width - (21.dp.toPx()))
+                                        close()
+                                    }
+                                    drawPath(
+                                        path = pathTriangle,
+                                        color = Color(0xff363636),
+                                        style = Fill
+                                    )
+                                    drawRoundRect(
+                                        cornerRadius = CornerRadius(2.dp.toPx(), 2.dp.toPx()),
+                                        color = Color(0xffd33a31),
+                                        topLeft = Offset(size.width / 2 - (2.dp.toPx()), -85.dp.toPx()),
+                                        size = Size(4.dp.toPx(), 75.dp.toPx()),
+                                    )
+                                }
+                                val m = with(LocalDensity.current) {
+                                    -14.dp.toPx()
+                                }
+                                val mx = with(LocalDensity.current) {
+                                    -89.dp.toPx()
+                                }
+                                var yO by remember { mutableStateOf(m - (abs(mx) - abs(m)) * mediaPlayerViewModel.volume) }
+                                val d = rememberDraggableState {
+                                    yO = kotlin.math.max(min(yO + it, m), mx)
+
+                                }
+                                remember(yO) {
+                                    mediaPlayerViewModel.volume = (abs(yO) - abs(m)) / (abs(mx) - abs(m))
+                                    mediaPlayerViewModel.mediaPlayerState?.volume =
+                                        mediaPlayerViewModel.volume.toDouble()
+
+                                }
+                                //可以拖动的圆
+                                Box(
+                                    modifier = Modifier
+                                        .offset {
+                                            IntOffset(0, yO.roundToInt())
+                                        }
+                                        .clip(CircleShape).background(Color(0xffd33a31)).size(8.dp)
+                                        .draggable(d, Orientation.Vertical)
+                                )
+                            }
+                        }
+
+
+                    }
+                    Icon(
+                        painterResource("image/ic_volumn.webp"),
+                        contentDescription = null,
+                        tint = globalStyle.current.RightControlColor,
+                        modifier = Modifier.size(20.dp)
+                            .pointerInput(Unit) {
+                                detectTapGestures {
+                                    show = !show
+                                }
+                            }.antialias()
+                    )
+                }
 
 
             }

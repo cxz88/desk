@@ -19,6 +19,7 @@ enum class FuncEnum(val musicFunc: String, val key: String) {
     SHOW_DESK_LYC("showDeskLyc", "showDeskLyc"),
     PLAY_CURRENT_TIME("playCurrentTime", "playCurrentTime"),
     PLAY_OR_PAUSE_STATE("playOrPauseState", "playOrPauseState"),
+    MUSIC_ID("musicId", "musicId"),
     LycPost("LycPost", "LycPost"),
     mainPost("mainPost", "mainPost"),
 }

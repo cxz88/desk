@@ -1,7 +1,6 @@
 package com.chenxinzhi.ui.topbar
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -12,8 +11,6 @@ import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.Email
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,7 +19,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.IntOffset
@@ -37,6 +33,8 @@ import kotlinx.coroutines.flow.collectLatest
 fun RowScope.RightBar(
     searchList: MutableStateFlow<List<String>>,
     showSearchTip: MutableStateFlow<Boolean>,
+    searchKeyList: MutableStateFlow<String>,
+    closeFill:()->Unit,
     content: @Composable () -> Unit
 ) {
     content()
@@ -113,7 +111,9 @@ fun RowScope.RightBar(
                         ),
                         keyboardActions = KeyboardActions(
                             onDone = {
-                                //发送请求，并为
+                                //发送请求
+                                closeFill()
+                                searchKeyList.value=searchText
                             }
                         ),
                         singleLine = true,
@@ -137,41 +137,42 @@ fun RowScope.RightBar(
             }
         }
         Box(modifier = Modifier.width(10.dp))
-        Row(
-            modifier = Modifier.offset { IntOffset(0, -6.dp.roundToPx()) }.fillMaxHeight(),
+                Row(
+            modifier = Modifier.offset { IntOffset(0, -6.dp.roundToPx()) }.width(180.dp),
             verticalAlignment = Alignment.Bottom
-        ) {
-//            val focusManager = LocalFocusManager.current
-            Icon(
-                Icons.Outlined.Settings,
-                contentDescription = null,
-                tint = globalStyle.current.topBarRightColor,
-                modifier = Modifier.size(19.dp).clickable {
-//                    focusManager.clearFocus()
-                }
-            )
-            Box(modifier = Modifier.width(16.dp))
-            Icon(
-                Icons.Outlined.Email,
-                contentDescription = null,
-                tint = globalStyle.current.topBarRightColor,
-                modifier = Modifier.size(19.dp)
-            )
-            Box(modifier = Modifier.width(16.dp))
-            Icon(
-                painterResource("image/ic_theme.webp"),
-                contentDescription = null,
-                tint = globalStyle.current.topBarRightColor,
-                modifier = Modifier.size(18.dp)
-            )
-            Box(modifier = Modifier.width(16.dp))
-            Icon(
-                painterResource("image/ic_screen_max.webp"),
-                contentDescription = null,
-                tint = globalStyle.current.topBarRightColor,
-                modifier = Modifier.size(18.dp)
-            )
-            Box(modifier = Modifier.width(16.dp))
-        }
+        ){}
+// {
+////            val focusManager = LocalFocusManager.current
+//            Icon(
+//                Icons.Outlined.Settings,
+//                contentDescription = null,
+//                tint = globalStyle.current.topBarRightColor,
+//                modifier = Modifier.size(19.dp).clickable {
+////                    focusManager.clearFocus()
+//                }
+//            )
+//            Box(modifier = Modifier.width(16.dp))
+//            Icon(
+//                Icons.Outlined.Email,
+//                contentDescription = null,
+//                tint = globalStyle.current.topBarRightColor,
+//                modifier = Modifier.size(19.dp)
+//            )
+//            Box(modifier = Modifier.width(16.dp))
+//            Icon(
+//                painterResource("image/ic_theme.webp"),
+//                contentDescription = null,
+//                tint = globalStyle.current.topBarRightColor,
+//                modifier = Modifier.size(18.dp)
+//            )
+//            Box(modifier = Modifier.width(16.dp))
+//            Icon(
+//                painterResource("image/ic_screen_max.webp"),
+//                contentDescription = null,
+//                tint = globalStyle.current.topBarRightColor,
+//                modifier = Modifier.size(18.dp)
+//            )
+//            Box(modifier = Modifier.width(16.dp))
+//        }
     }
 }

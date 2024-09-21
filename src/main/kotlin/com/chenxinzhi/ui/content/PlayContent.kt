@@ -6,6 +6,7 @@ import androidx.compose.animation.core.*
 import androidx.compose.animation.slideIn
 import androidx.compose.animation.slideOut
 import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.*
@@ -22,15 +23,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.rotate
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.LineHeightStyle
@@ -42,15 +42,18 @@ import androidx.compose.ui.window.FrameWindowScope
 import com.chenxinzhi.api.Api
 import com.chenxinzhi.ui.style.GlobalStyle
 import com.chenxinzhi.ui.style.globalStyle
+import com.chenxinzhi.utils.convertToSeconds
 import com.chenxinzhi.viewmodel.content.PlayContentViewModel
+import com.github.panpf.sketch.AsyncImage
 import kotlinx.coroutines.flow.MutableStateFlow
 import moe.tlaster.precompose.viewmodel.viewModel
 import kotlin.math.max
+import kotlin.math.roundToInt
 
 @Composable
 fun FrameWindowScope.PlayContent(
     //原来的右边的内容
-    content: @Composable (FrameWindowScope.() -> Unit),
+    content: @Composable (FrameWindowScope.(musicId: MutableStateFlow<String>) -> Unit),
     show: Boolean,
     isPlay: Boolean,
     currentTime: Float,
@@ -58,16 +61,76 @@ fun FrameWindowScope.PlayContent(
     lycContent: MutableStateFlow<String>,
     searchList: MutableStateFlow<List<String>>,
     searchTipShow: MutableStateFlow<Boolean>,
+    searchKey: MutableStateFlow<String>,
+    musicId: MutableStateFlow<String>,
     playContentViewModel: PlayContentViewModel = viewModel {
         PlayContentViewModel()
     },
 
-    ) {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopEnd) {
-        LaunchedEffect(Unit) {
-            println(Api.page("带我")?.abslist?.forEach(::println))
+    closeFill: () -> Unit
+) {
+    val md by musicId.collectAsState()
+    val split = md.split(",")
+    val pic = split[1]
+    //初始化歌词
+    val id = split[0]
+    val lycIndex by remember(currentTime) {
+        derivedStateOf {
+            max(0, playContentViewModel.lycList.filter { currentTime >= it.first }
+                .lastIndex)
+
         }
-        content()
+    }
+    remember(lycIndex) {
+        lycContent.value = playContentViewModel.lycList[lycIndex].second
+    }
+    LaunchedEffect(id) {
+        playContentViewModel.lycList = "[00:00.00] 正在获取歌词"
+            .split("\n").associate {
+
+                (if (it.length > 8) {
+                    it.substring(1, 9)
+                } else {
+                    it
+                }) to if (it.length > 8) {
+                    it.substring(10)
+                } else {
+                    ""
+                }
+            }
+            .filter {
+                it.key.isNotBlank()
+            }
+            .map {
+                convertToSeconds(it.key) to it.value
+            }.toList()
+        playContentViewModel.lycList = Api.getlyc(id)?.data?.lrclist?.map {
+            it.time.toDouble() to it.lineLyric
+        } ?: "[00:00.00] 暂无歌词"
+            .split("\n").associate {
+
+                (if (it.length > 8) {
+                    it.substring(1, 9)
+                } else {
+                    it
+                }) to if (it.length > 8) {
+                    it.substring(10)
+                } else {
+                    ""
+                }
+            }
+            .filter {
+                it.key.isNotBlank()
+            }
+            .map {
+                convertToSeconds(it.key) to it.value
+            }.toList()
+        lycContent.value = playContentViewModel.lycList[lycIndex].second
+    }
+
+
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopEnd) {
+        content(musicId)
         AnimatedVisibility(
             show, enter =
             slideIn { IntOffset(0, it.height) }, exit = slideOut { IntOffset(0, it.height) }) {
@@ -89,19 +152,11 @@ fun FrameWindowScope.PlayContent(
                         )
                     }
                 }
-                val lycIndex by remember(currentTime) {
-                    derivedStateOf {
-                        max(0, playContentViewModel.lycList.filter { currentTime >= it.first }
-                            .lastIndex)
 
-                    }
-                }
-                remember(lycIndex) {
-                    lycContent.value = playContentViewModel.lycList[lycIndex].second
-                }
                 LazyColumn {
                     item {
                         Row(modifier = Modifier.size(width, height)) {
+
                             Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
                                 Box(
                                     modifier = Modifier.fillMaxHeight().offset(y = (-50).dp),
@@ -118,9 +173,13 @@ fun FrameWindowScope.PlayContent(
 
 
                                     )
-                                    Image(painterResource("image/musicPic.jpg"),
+                                    val p = with(LocalDensity.current) {
+                                        212.dp.toPx().roundToInt()
+                                    }
+                                    AsyncImage(pic.replace("/1000/", "/$p/"),
                                         contentDescription = null,
                                         contentScale = ContentScale.Crop,
+                                        filterQuality = FilterQuality.High,
                                         modifier = Modifier
                                             .graphicsLayer {
                                                 rotationZ = ani.value % 360f
@@ -137,6 +196,8 @@ fun FrameWindowScope.PlayContent(
                                     modifier = Modifier.fillMaxHeight(),
                                     contentAlignment = Alignment.TopCenter
                                 ) {
+
+
                                     Image(painterResource("image/ic_play_neddle.webp"),
                                         contentDescription = null,
                                         modifier = Modifier.size(160.dp)
@@ -232,10 +293,11 @@ fun FrameWindowScope.PlayContent(
         val searTip by searchList.collectAsState()
         val s = searTip.filter { it.isNotBlank() }
         val ap by animateFloatAsState(if (showTip && s.isNotEmpty()) 1f else 0f)
+        val ht by animateDpAsState(if (showTip && s.isNotEmpty()) 300.dp else 0.dp)
         Box(
             modifier = Modifier.graphicsLayer {
                 alpha = ap
-            }.clip(RoundedCornerShape(8.dp)).height(300.dp).width(350.dp)
+            }.clip(RoundedCornerShape(8.dp)).height(ht).width(350.dp)
                 .background(Color(0xff363636))
         ) {
 
@@ -251,10 +313,13 @@ fun FrameWindowScope.PlayContent(
                             Color.Transparent
                         }, tween(1, easing = LinearEasing)
                     )
+                    val focusManager = LocalFocusManager.current
                     BasicText(
                         item,
                         style = TextStyle(
-                            fontSize = 14.sp,
+                            fontSize = with(LocalDensity.current) {
+                                14.dp.toSp()
+                            },
                             lineHeightStyle = LineHeightStyle(
                                 LineHeightStyle.Alignment.Center,
                                 LineHeightStyle.Trim.None
@@ -263,9 +328,18 @@ fun FrameWindowScope.PlayContent(
                                 24.dp.toSp()
                             },
                         ),
+
                         modifier = Modifier.height(28.dp).fillMaxWidth().background(bg)
                             .pointerHoverIcon(PointerIcon.Hand)
                             .hoverable(interactionSource)
+                            .pointerInput(item) {
+                                detectTapGestures {
+                                    closeFill()
+                                    searchKey.value = item
+                                    focusManager.clearFocus()
+
+                                }
+                            }
                             .padding(horizontal = 10.dp),
                         overflow = TextOverflow.Ellipsis,
                         color = {

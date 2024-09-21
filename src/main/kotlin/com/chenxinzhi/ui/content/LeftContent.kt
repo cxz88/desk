@@ -4,7 +4,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -12,7 +11,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.chenxinzhi.ui.style.GlobalStyle
 import com.chenxinzhi.ui.style.globalStyle
@@ -40,14 +38,14 @@ fun LeftContent() {
                     color = globalStyle.current.avatarFontColor
                 )
                 Box(modifier = Modifier.width(8.dp))
-                Icon(painter = painterResource("image/ic_triangle_right.webp"),
-                    contentDescription = null,
-                    tint = globalStyle.current.avatarFontRightIconColor,
-                    modifier = Modifier
-                        .offset { IntOffset(0, 2.dp.roundToPx()) }
-                        .size(8.dp)
-
-                )
+//                Icon(painter = painterResource("image/ic_triangle_right.webp"),
+//                    contentDescription = null,
+//                    tint = globalStyle.current.avatarFontRightIconColor,
+//                    modifier = Modifier
+//                        .offset { IntOffset(0, 2.dp.roundToPx()) }
+//                        .size(8.dp)
+//
+//                )
             }
 //            val listItem = listOf(
 //                "发现音乐" to painterResource("image/ic_sound_effect.webp"),

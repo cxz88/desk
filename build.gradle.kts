@@ -35,6 +35,9 @@ dependencies {
         "osx-aarch_64" -> "mac-aarch64"
         else -> throw IllegalStateException("Unknown OS: ${osdetector.classifier}")
     }
+    // Provides the core functions of Sketch as well as singletons and extension
+// functions that rely on singleton implementations
+    implementation("io.github.panpf.sketch4:sketch-compose:4.0.0-alpha08")
     implementation("org.openjfx:javafx-base:21.0.4:${fxSuffix}")
     implementation("org.openjfx:javafx-graphics:21.0.4:${fxSuffix}")
     implementation("org.openjfx:javafx-controls:21.0.4:${fxSuffix}")
@@ -53,7 +56,6 @@ dependencies {
 
 
 }
-
 compose.desktop {
     application {
         mainClass = "MainKt"
@@ -64,6 +66,7 @@ compose.desktop {
             packageVersion = "1.0.0"
         }
     }
+
 }
 
 sqldelight {
@@ -73,3 +76,4 @@ sqldelight {
         }
     }
 }
+

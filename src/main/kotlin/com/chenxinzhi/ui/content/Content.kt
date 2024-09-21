@@ -7,7 +7,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Icon
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -17,7 +16,6 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.FrameWindowScope
 import androidx.compose.ui.window.WindowState
@@ -39,7 +37,9 @@ fun FrameWindowScope.Content(
     exitApplication: () -> Unit,
     lycContent: MutableStateFlow<String>,
     lycDeskShow: MutableStateFlow<Boolean>,
-    content: @Composable FrameWindowScope.() -> Unit = {}
+    searchKey: MutableStateFlow<String>,
+    closeFlow: MutableStateFlow<Boolean>,
+    content: @Composable (FrameWindowScope.(musicId: MutableStateFlow<String>) -> Unit) = {}
 ) {
     val current = LocalFocusManager.current
     Box(
@@ -52,6 +52,7 @@ fun FrameWindowScope.Content(
                         val awaitPointerEvent = awaitPointerEvent(PointerEventPass.Final)
                         if (!awaitPointerEvent.changes[0].isConsumed && awaitPointerEvent.type == PointerEventType.Press) {
                             current.clearFocus()
+
                         }
                     }
                 }
@@ -78,10 +79,13 @@ fun FrameWindowScope.Content(
         var currentTime by remember { mutableStateOf(0f) }
         val searchList = remember { MutableStateFlow(listOf<String>()) }
         val searchTipShow = remember { MutableStateFlow(false) }
+        val musicId = remember { MutableStateFlow(",,,") }
         Column(horizontalAlignment = Alignment.End) {
             Box {
                 Bar(state, exitApplication, rightContent = {
-                    RightBar(searchList, searchTipShow) {
+                    RightBar(searchList, searchTipShow, searchKey, {
+                        show = false
+                    }) {
                         androidx.compose.animation.AnimatedVisibility(
                             !show, enter =
                             fadeIn(), exit = fadeOut()
@@ -135,30 +139,42 @@ fun FrameWindowScope.Content(
                             verticalAlignment = Alignment.Bottom,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Icon(
-                                painterResource("image/ic_back.webp"),
-                                contentDescription = null,
-                                tint = Color(0xFFaeaeae),
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Icon(
-                                painterResource("image/ic_more.webp"),
-                                contentDescription = null,
-                                tint = Color(0xFFaeaeae),
-                                modifier = Modifier.size(16.dp)
-                            )
+//                            Icon(
+//                                painterResource("image/ic_back.webp"),
+//                                contentDescription = null,
+//                                tint = Color(0xFFaeaeae),
+//                                modifier = Modifier.size(16.dp)
+//                            )
+//                            Icon(
+//                                painterResource("image/ic_more.webp"),
+//                                contentDescription = null,
+//                                tint = Color(0xFFaeaeae),
+//                                modifier = Modifier.size(16.dp)
+//                            )
                         }
                     }
 
                 }
             }
-            PlayContent(content, show, isPlay, currentTime, conRateAni, lycContent, searchList, searchTipShow)
+            PlayContent(
+                content,
+                show,
+                isPlay,
+                currentTime,
+                conRateAni,
+                lycContent,
+                searchList,
+                searchTipShow,
+                searchKey,
+                musicId
+            ) { show = false }
 
         }
+        val md by musicId.collectAsState()
         //播放器
         Column(verticalArrangement = Arrangement.Bottom, modifier = Modifier.fillMaxSize()) {
             MediaPlayer(
-                javaClass.getResource("/music/M500000SFLv10YFDuo.mp3")?.toURI().toString(),
+                md,
                 lycDeskShow,
                 isPlayCallback = {
                     isPlay = it
@@ -168,7 +184,8 @@ fun FrameWindowScope.Content(
                 },
                 currentTimeChange = {
                     currentTime = it
-                }) { show = !show }
+                }, closeFlow = closeFlow
+            ) { show = !show }
         }
 
     }

@@ -92,13 +92,19 @@ fun MediaPlayer(
     remember(mediaPlayerViewModel.progress) {
         processCallback(mediaPlayerViewModel.progress)
     }
+    var preTime by remember { mutableStateOf(0L) }
     remember(mediaPlayerViewModel.currentTime, mediaPlayerViewModel.isReady) {
         currentTimeChange(mediaPlayerViewModel.currentTime)
-        rememberCoroutineScope.launch {
-            if (mediaPlayerViewModel.isReady) {
-                updateByKey(FuncEnum.PLAY_CURRENT_TIME, mediaPlayerViewModel.currentTime.toString())
+        //每隔5s插入一次
+        if (System.currentTimeMillis() - preTime > 5000) {
+            rememberCoroutineScope.launch {
+                if (mediaPlayerViewModel.isReady) {
+                    preTime = System.currentTimeMillis()
+                    updateByKey(FuncEnum.PLAY_CURRENT_TIME, mediaPlayerViewModel.currentTime.toString())
+                }
             }
         }
+
     }
     var count by remember { mutableStateOf(0) }
     DisposableEffect(url) {

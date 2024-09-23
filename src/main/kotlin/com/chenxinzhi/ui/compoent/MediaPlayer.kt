@@ -178,28 +178,21 @@ fun MediaPlayer(
                                                 mediaPlayerViewModel.isWait = false
                                                 mediaPlayerViewModel.isPause = false
                                             } else {
-                                                //如果设置了单曲循环,则快进到0,重新播放
-                                                //如果有下一个则播放下一个
-                                                val s = getByKey(FuncEnum.PLAY_LIST, "").split(":%%19969685426854***")
-                                                if (s.isEmpty()) {
-                                                    mediaPlayerViewModel.isWait = true
-                                                    val d = 0.0
-                                                    mediaPlayerViewModel.currentTime = d.toFloat()
-                                                    mediaPlayerViewModel.mediaPlayerState?.seek(Duration.seconds(d))
-                                                    delay(1)
-                                                    mediaPlayerViewModel.isWait = false
-                                                    mediaPlayerViewModel.isPause = false
-                                                }
                                                 if (mode == 0) {
-                                                    musicFlow.value =
-                                                        s[mediaPlayerViewModel.nowPlayIndex] + ",%%end1996888888888%%"
-                                                    if (mediaPlayerViewModel.nowPlayIndex >= s.size - 1) {
-                                                        mediaPlayerViewModel.nowPlayIndex = 0
+                                                    val s = getByKey(FuncEnum.PLAY_LIST, "").split(":%%19969685426854***")
+                                                    val index = mediaPlayerViewModel.nowPlayIndex + 1
+                                                    mediaPlayerViewModel.nowPlayIndex = if (index > s.size - 1) {
+                                                        0
+                                                    } else {
+                                                        index
                                                     }
+                                                    musicFlow.value = s[mediaPlayerViewModel.nowPlayIndex] + ",%%end1996888888888%%"
                                                 } else {
-                                                    musicFlow.value =
-                                                        s[Random.nextInt(0, s.size)] + ",%%end1996888888888%%"
+                                                    val s = getByKey(FuncEnum.PLAY_LIST, "").split(":%%19969685426854***")
+                                                    mediaPlayerViewModel.nowPlayIndex = Random.nextInt(0, s.size)
+                                                    musicFlow.value = s[mediaPlayerViewModel.nowPlayIndex] + ",%%end1996888888888%%"
                                                 }
+
 
                                             }
                                         }

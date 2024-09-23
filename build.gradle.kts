@@ -39,12 +39,12 @@ dependencies {
     // Provides the core functions of Sketch as well as singletons and extension
 // functions that rely on singleton implementations
     implementation("io.github.panpf.sketch4:sketch-compose:4.0.0-alpha08")
-    implementation("org.openjfx:javafx-base:21.0.4:${fxSuffix}")
-    implementation("org.openjfx:javafx-graphics:21.0.4:${fxSuffix}")
-    implementation("org.openjfx:javafx-controls:21.0.4:${fxSuffix}")
-    implementation("org.openjfx:javafx-swing:21.0.4:${fxSuffix}")
-    implementation("org.openjfx:javafx-web:21.0.4:${fxSuffix}")
-    implementation("org.openjfx:javafx-media:21.0.4:${fxSuffix}")
+    implementation("org.openjfx:javafx-base:17.0.12:${fxSuffix}")
+    implementation("org.openjfx:javafx-graphics:17.0.12:${fxSuffix}")
+    implementation("org.openjfx:javafx-controls:17.0.12:${fxSuffix}")
+    implementation("org.openjfx:javafx-swing:17.0.12:${fxSuffix}")
+    implementation("org.openjfx:javafx-web:17.0.12:${fxSuffix}")
+    implementation("org.openjfx:javafx-media:17.0.12:${fxSuffix}")
     runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.9.0-RC.2")
     implementation(compose.desktop.currentOs)
     api("moe.tlaster:precompose:1.6.2")

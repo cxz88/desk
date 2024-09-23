@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.IntOffset
@@ -75,6 +76,7 @@ fun RowScope.RightBar(
 
                     }
                 }
+                val fm =  LocalFocusManager.current
                 Icon(
                     Icons.Default.Search,
                     contentDescription = null,
@@ -113,11 +115,14 @@ fun RowScope.RightBar(
                         keyboardOptions = KeyboardOptions.Default.copy(
                             imeAction = ImeAction.Done // 设置 IME 动作为 Done (回车)
                         ),
+
                         keyboardActions = KeyboardActions(
                             onDone = {
                                 //发送请求
+                                searchKeyList.value = "$searchText,${System.currentTimeMillis()}"
+                                //删除焦点
+                                fm.clearFocus()
                                 closeFill()
-                                searchKeyList.value = searchText
                             }
                         ),
                         singleLine = true,

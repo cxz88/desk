@@ -84,9 +84,12 @@ fun FrameWindowScope.Content(
         val searchList = remember { MutableStateFlow(listOf<String>()) }
         val searchTipShow = remember { MutableStateFlow(false) }
         //从数据库中价值
-        val musicId = remember { MutableStateFlow(runBlocking {
-            getByKey(FuncEnum.MUSIC_ID,",,,")
-        }) }
+        val musicId = remember {
+            MutableStateFlow(runBlocking {
+                getByKey(FuncEnum.MUSIC_ID, ",,,")
+            })
+        }
+
 
         Column(horizontalAlignment = Alignment.End) {
             Box {
@@ -179,13 +182,24 @@ fun FrameWindowScope.Content(
 
         }
         val md by musicId.collectAsState()
+        val ref = remember {
+            MutableStateFlow(System.currentTimeMillis())
+        }
         LaunchedEffect(md) {
-            updateByKey(FuncEnum.MUSIC_ID,md)
+            updateByKey(FuncEnum.MUSIC_ID, md)
+            if (md != ",,," && md.split(",").last() != "%%end1996888888888%%") {
+                val byKey = getByKey(FuncEnum.PLAY_LIST, "")
+                updateByKey(FuncEnum.PLAY_LIST, if (byKey.isBlank()) md else "$byKey:%%19969685426854***$md")
+                ref.value=System.currentTimeMillis()
+            }
+
         }
         //播放器
         Column(verticalArrangement = Arrangement.Bottom, modifier = Modifier.fillMaxSize()) {
             MediaPlayer(
                 md,
+                musicId,
+                ref,
                 lycDeskShow,
                 isPlayCallback = {
                     isPlay = it

@@ -62,6 +62,7 @@ import org.jetbrains.skia.Region
 import kotlin.math.abs
 import kotlin.math.min
 import kotlin.math.roundToInt
+import kotlin.random.Random
 
 /**
  * @description
@@ -72,6 +73,8 @@ import kotlin.math.roundToInt
 @Composable
 fun MediaPlayer(
     musicId: String = "",
+    musicFlow: MutableStateFlow<String>,
+    ref: MutableStateFlow<Long>,
     lycDeskShow: MutableStateFlow<Boolean>,
     mediaPlayerViewModel: MediaPlayerViewModel = viewModel {
         MediaPlayerViewModel()
@@ -85,6 +88,18 @@ fun MediaPlayer(
     ) {
     val split = musicId.split(",")
     val url by remember(split) { mutableStateOf(split[0]) }
+    val sss by ref.collectAsState()
+    //更新播放索引
+    LaunchedEffect(url, sss) {
+        val s = getByKey(FuncEnum.PLAY_LIST, "").split(":%%19969685426854***")
+        val s1 = getByKey(FuncEnum.MUSIC_ID, "")
+        mediaPlayerViewModel.nowPlayIndex = if (s.size == 1 && s[0].isBlank()) {
+            -1
+        } else {
+            val lastIndexOf = s.map { it.split(",")[0] }.lastIndexOf(s1.split(",")[0])
+            lastIndexOf
+        }
+    }
     val pic by remember(split) { mutableStateOf(split[1]) }
     val name by remember(split) { mutableStateOf(split[2]) }
     val ysj by remember(split) { mutableStateOf(split[3]) }
@@ -107,7 +122,7 @@ fun MediaPlayer(
 
     }
     var count by remember { mutableStateOf(0) }
-    DisposableEffect(url) {
+    DisposableEffect(musicId) {
         rememberCoroutineScope.launch {
             if (url.isBlank()) {
                 mediaPlayerViewModel.isPause = true
@@ -151,7 +166,44 @@ fun MediaPlayer(
                                         mediaPlayerViewModel.currentTime = newValue.toSeconds().toFloat()
                                     }
                                     setOnEndOfMedia {
-                                        mediaPlayerViewModel.isPause = true
+                                        rememberCoroutineScope.launch {
+                                            mediaPlayerViewModel.isPause = true
+                                            val mode = getByKey(FuncEnum.PLAY_MODEL, "0").toInt()
+                                            if (mode == 2) {
+                                                mediaPlayerViewModel.isWait = true
+                                                val d = 0.0
+                                                mediaPlayerViewModel.currentTime = d.toFloat()
+                                                mediaPlayerViewModel.mediaPlayerState?.seek(Duration.seconds(d))
+                                                delay(1)
+                                                mediaPlayerViewModel.isWait = false
+                                                mediaPlayerViewModel.isPause = false
+                                            } else {
+                                                //如果设置了单曲循环,则快进到0,重新播放
+                                                //如果有下一个则播放下一个
+                                                val s = getByKey(FuncEnum.PLAY_LIST, "").split(":%%19969685426854***")
+                                                if (s.isEmpty()) {
+                                                    mediaPlayerViewModel.isWait = true
+                                                    val d = 0.0
+                                                    mediaPlayerViewModel.currentTime = d.toFloat()
+                                                    mediaPlayerViewModel.mediaPlayerState?.seek(Duration.seconds(d))
+                                                    delay(1)
+                                                    mediaPlayerViewModel.isWait = false
+                                                    mediaPlayerViewModel.isPause = false
+                                                }
+                                                if (mode == 0) {
+                                                    musicFlow.value =
+                                                        s[mediaPlayerViewModel.nowPlayIndex] + ",%%end1996888888888%%"
+                                                    if (mediaPlayerViewModel.nowPlayIndex >= s.size - 1) {
+                                                        mediaPlayerViewModel.nowPlayIndex = 0
+                                                    }
+                                                } else {
+                                                    musicFlow.value =
+                                                        s[Random.nextInt(0, s.size)] + ",%%end1996888888888%%"
+                                                }
+
+                                            }
+                                        }
+
 
                                     }
 
@@ -347,7 +399,21 @@ fun MediaPlayer(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxSize()
             ) {
-                Canvas(Modifier.size(20.dp).pointerHoverIcon(PointerIcon.Hand)) {
+                Canvas(Modifier.size(20.dp).pointerHoverIcon(PointerIcon.Hand).pointerInput(Unit) {
+                    detectTapGestures {
+                        //上一首
+                        rememberCoroutineScope.launch {
+                            val s = getByKey(FuncEnum.PLAY_LIST, "").split(":%%19969685426854***")
+                            val index = mediaPlayerViewModel.nowPlayIndex - 1
+                            mediaPlayerViewModel.nowPlayIndex = if (index < 0) {
+                                s.size - 1
+                            } else {
+                                index
+                            }
+                            musicFlow.value = s[mediaPlayerViewModel.nowPlayIndex] + ",%%end1996888888888%%"
+                        }
+                    }
+                }) {
                     val roundedPolygon = RoundedPolygon(
                         numVertices = 3,
                         radius = size.minDimension / 2f,
@@ -485,7 +551,20 @@ fun MediaPlayer(
                     }
                 )
                 Box(modifier = Modifier.width(15.dp))
-                Canvas(Modifier.size(20.dp).pointerHoverIcon(PointerIcon.Hand)) {
+                Canvas(Modifier.size(20.dp).pointerHoverIcon(PointerIcon.Hand).pointerInput(Unit) {
+                    detectTapGestures {
+                        rememberCoroutineScope.launch {
+                            val s = getByKey(FuncEnum.PLAY_LIST, "").split(":%%19969685426854***")
+                            val index = mediaPlayerViewModel.nowPlayIndex + 1
+                            mediaPlayerViewModel.nowPlayIndex = if (index > s.size - 1) {
+                                0
+                            } else {
+                                index
+                            }
+                            musicFlow.value = s[mediaPlayerViewModel.nowPlayIndex] + ",%%end1996888888888%%"
+                        }
+                    }
+                }) {
                     val roundedPolygon = RoundedPolygon(
                         numVertices = 3,
                         radius = size.minDimension / 2f,

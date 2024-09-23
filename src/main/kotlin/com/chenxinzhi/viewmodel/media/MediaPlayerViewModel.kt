@@ -6,6 +6,7 @@ import com.chenxinzhi.sqlservice.getByKey
 import com.chenxinzhi.sqlservice.updateByKey
 import javafx.scene.media.MediaPlayer
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import moe.tlaster.precompose.viewmodel.ViewModel
 import moe.tlaster.precompose.viewmodel.viewModelScope
 
@@ -45,6 +46,17 @@ class MediaPlayerViewModel : ViewModel() {
     val showDeskLyc
         get() = _showDeskLyc
 
+
+    var nowPlayIndex by mutableStateOf(runBlocking {
+        val s = getByKey(FuncEnum.PLAY_LIST, "").split(":%%19969685426854***")
+        val s1 = getByKey(FuncEnum.MUSIC_ID, "")
+        if (s.size == 1 && s[0].isBlank()) {
+            -1
+        } else {
+            s.map { it.split(",")[0] }.lastIndexOf(s1.split(",")[0])
+        }
+    })
+
     fun setShowDeskLyc(value: Boolean) {
         _showDeskLyc = value
         if (isReady) {
@@ -64,6 +76,7 @@ class MediaPlayerViewModel : ViewModel() {
             }
         }
     }
+
 
     init {
         viewModelScope.launch {

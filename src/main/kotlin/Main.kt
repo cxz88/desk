@@ -1,3 +1,4 @@
+
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.*
@@ -16,13 +17,10 @@ import com.chenxinzhi.ui.content.RightContent
 import com.chenxinzhi.ui.desk.deskLyc
 import com.chenxinzhi.ui.style.GlobalStyle
 import com.chenxinzhi.ui.style.globalStyle
-import com.sun.java.accessibility.util.AWTEventMonitor.addActionListener
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import moe.tlaster.precompose.PreComposeApp
-import java.awt.FlowLayout
-import java.awt.Toolkit
 import java.awt.*
 
 val sqlDriver: SqlDriver = JdbcSqliteDriver("jdbc:sqlite:${System.getProperty("user.home")}/test.db")
@@ -30,15 +28,15 @@ val sqlDriver: SqlDriver = JdbcSqliteDriver("jdbc:sqlite:${System.getProperty("u
 
 fun main() {
     Thread.setDefaultUncaughtExceptionHandler { _, e ->
-        Dialog(Frame(), e.message ?: "Error").apply {
+        Dialog(Frame(), e.message ?: "错误").apply {
             layout = FlowLayout()
-            val label = Label(e.toString())
+            val label = TextArea(e.toString())
             add(label)
-            val button = Button("OK").apply {
+            val button = Button("确定").apply {
                 addActionListener { dispose() }
             }
             add(button)
-            setSize(300, 300)
+            setSize(500, 500)
             isVisible = true
         }
     }
@@ -48,7 +46,7 @@ fun main() {
         val c = rememberCoroutineScope()
         val ldShow by lycDeskShow.collectAsState()
         try {
-            val create = Database.Schema.create(sqlDriver)
+            Database.Schema.create(sqlDriver)
         } catch (_: Exception) {
 
         }

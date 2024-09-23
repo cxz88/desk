@@ -31,17 +31,18 @@ import kotlinx.coroutines.flow.MutableStateFlow
  * @date 2024/9/21
  */
 @Composable
-fun SearchListContent(searchStr: String, musicId: MutableStateFlow<String>) {
+fun SearchListContent(search: String, musicId: MutableStateFlow<String>) {
+    val searchStr = search.split(",")[0]
     var loading by remember(searchStr) { mutableStateOf(true) }
     val scrollState = remember(searchStr) {
         LazyListState()
     }
-    val loadedList = remember(searchStr) { mutableStateListOf<Abslist>() }
+    val loadedList = remember(search) { mutableStateListOf<Abslist>() }
     Box(modifier = Modifier.fillMaxSize().padding(bottom = 62.dp), contentAlignment = Alignment.Center) {
-        LaunchedEffect(searchStr) {
+        LaunchedEffect(search) {
             //显示加载动画,进行网络数据加载
             var count = 0
-            var c = count++
+            val c = count++
             val s = Api.page(searchStr, c)
             var l = s?.abslist ?: listOf()
             var countW = 0
@@ -144,7 +145,7 @@ fun SearchListContent(searchStr: String, musicId: MutableStateFlow<String>) {
                                                             )
                                                         }
 
-                                                    },${abs.nAME},${abs.aRTIST}"
+                                                    },${abs.nAME},${abs.aRTIST},${System.currentTimeMillis()}"
                                             })
                                         }) {
                                             val s = abs.dURATION.toInt()

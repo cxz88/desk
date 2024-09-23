@@ -247,7 +247,7 @@ fun FrameWindowScope.PlayContent(
                                     item {
                                         Spacer(modifier = Modifier.height(80.dp))
                                     }
-                                    items(playContentViewModel.lycList.size, ) {
+                                    items(playContentViewModel.lycList.size) {
                                         val lycColor by animateColorAsState(if (it == lycIndex) globalStyle.current.lycCheckColor else globalStyle.current.lycColor)
                                         val lycFontsize by animateFloatAsState(if (it == lycIndex) globalStyle.current.lycFontCheckSize else globalStyle.current.lycFontSize)
 
@@ -256,7 +256,7 @@ fun FrameWindowScope.PlayContent(
                                             color = lycColor,
                                             fontSize = lycFontsize.sp,
 
-                                        )
+                                            )
                                         Spacer(modifier = Modifier.height(8.dp))
                                     }
                                     item {
@@ -335,7 +335,7 @@ fun FrameWindowScope.PlayContent(
                             .pointerInput(item) {
                                 detectTapGestures {
                                     closeFill()
-                                    searchKey.value = item
+                                    searchKey.value = "$item,${System.currentTimeMillis()}"
                                     focusManager.clearFocus()
 
                                 }

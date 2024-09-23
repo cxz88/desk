@@ -189,8 +189,22 @@ fun FrameWindowScope.Content(
             updateByKey(FuncEnum.MUSIC_ID, md)
             if (md != ",,," && md.split(",").last() != "%%end1996888888888%%") {
                 val byKey = getByKey(FuncEnum.PLAY_LIST, "")
-                updateByKey(FuncEnum.PLAY_LIST, if (byKey.isBlank()) md else "$byKey:%%19969685426854***$md")
-                ref.value=System.currentTimeMillis()
+                if (byKey.isBlank()) {
+                    updateByKey(FuncEnum.PLAY_LIST, md)
+                    ref.value=System.currentTimeMillis()
+                }else{
+                    val filter = byKey.split(":%%19969685426854***").filter { it.split(",")[0] != md.split(",")[0] }
+                    if (filter.isEmpty()) {
+                        updateByKey(FuncEnum.PLAY_LIST, md)
+                        ref.value=System.currentTimeMillis()
+                    }else{
+                        updateByKey(FuncEnum.PLAY_LIST, "${filter.joinToString(":%%19969685426854***")}:%%19969685426854***$md")
+                        ref.value=System.currentTimeMillis()
+                    }
+                }
+
+
+
             }
 
         }

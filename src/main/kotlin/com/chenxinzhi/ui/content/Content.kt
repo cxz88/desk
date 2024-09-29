@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -16,6 +17,7 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.FrameWindowScope
 import androidx.compose.ui.window.WindowState
@@ -24,6 +26,7 @@ import com.chenxinzhi.sqlservice.getByKey
 import com.chenxinzhi.sqlservice.updateByKey
 import com.chenxinzhi.ui.compoent.MediaPlayer
 import com.chenxinzhi.ui.style.GlobalStyle
+import com.chenxinzhi.ui.style.globalStyle
 import com.chenxinzhi.ui.topbar.Bar
 import com.chenxinzhi.ui.topbar.RightBar
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -101,40 +104,6 @@ fun FrameWindowScope.Content(
                             !show, enter =
                             fadeIn(), exit = fadeOut()
                         ) {
-//                            Row(
-//                                modifier = Modifier.offset { IntOffset(0, -5.dp.roundToPx()) }.width(400.dp)
-//                                    .fillMaxHeight()
-//                                    .padding(bottom = 6.dp),
-//                                horizontalArrangement = Arrangement.SpaceEvenly,
-//                                verticalAlignment = Alignment.Bottom
-//                            ) {
-//                                Text(
-//                                    "个性推荐",
-//                                    color = GlobalStyle.textCheckColor,
-//                                    fontSize = GlobalStyle.defaultFontSize
-//
-//                                )
-//                                Text(
-//                                    "歌单",
-//                                    color = GlobalStyle.textUnCheckColor,
-//                                    fontSize = GlobalStyle.defaultFontSize
-//                                )
-//                                Text(
-//                                    "排行榜",
-//                                    color = GlobalStyle.textUnCheckColor,
-//                                    fontSize = GlobalStyle.defaultFontSize
-//                                )
-//                                Text(
-//                                    "歌手",
-//                                    color = GlobalStyle.textUnCheckColor,
-//                                    fontSize = GlobalStyle.defaultFontSize
-//                                )
-//                                Text(
-//                                    "最新音乐",
-//                                    color = GlobalStyle.textUnCheckColor,
-//                                    fontSize = GlobalStyle.defaultFontSize
-//                                )
-//                            }
                         }
 
                     }
@@ -150,18 +119,13 @@ fun FrameWindowScope.Content(
                             verticalAlignment = Alignment.Bottom,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-//                            Icon(
-//                                painterResource("image/ic_back.webp"),
-//                                contentDescription = null,
-//                                tint = Color(0xFFaeaeae),
-//                                modifier = Modifier.size(16.dp)
-//                            )
-//                            Icon(
-//                                painterResource("image/ic_more.webp"),
-//                                contentDescription = null,
-//                                tint = Color(0xFFaeaeae),
-//                                modifier = Modifier.size(16.dp)
-//                            )
+                            Text(
+                                "仅供学习使用",
+                                fontSize = globalStyle.current.avatarFontSize,
+                                lineHeight = globalStyle.current.avatarFontSize,
+                                color = globalStyle.current.avatarFontColor,
+                                textAlign = TextAlign.Center
+                            )
                         }
                     }
 

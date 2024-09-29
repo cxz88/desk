@@ -11,9 +11,11 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -179,18 +181,22 @@ fun MediaPlayer(
                                                 mediaPlayerViewModel.isPause = false
                                             } else {
                                                 if (mode == 0) {
-                                                    val s = getByKey(FuncEnum.PLAY_LIST, "").split(":%%19969685426854***")
+                                                    val s =
+                                                        getByKey(FuncEnum.PLAY_LIST, "").split(":%%19969685426854***")
                                                     val index = mediaPlayerViewModel.nowPlayIndex + 1
                                                     mediaPlayerViewModel.nowPlayIndex = if (index > s.size - 1) {
                                                         0
                                                     } else {
                                                         index
                                                     }
-                                                    musicFlow.value = s[mediaPlayerViewModel.nowPlayIndex] + ",%%end1996888888888%%"
+                                                    musicFlow.value =
+                                                        s[mediaPlayerViewModel.nowPlayIndex] + ",%%end1996888888888%%"
                                                 } else {
-                                                    val s = getByKey(FuncEnum.PLAY_LIST, "").split(":%%19969685426854***")
+                                                    val s =
+                                                        getByKey(FuncEnum.PLAY_LIST, "").split(":%%19969685426854***")
                                                     mediaPlayerViewModel.nowPlayIndex = Random.nextInt(0, s.size)
-                                                    musicFlow.value = s[mediaPlayerViewModel.nowPlayIndex] + ",%%end1996888888888%%"
+                                                    musicFlow.value =
+                                                        s[mediaPlayerViewModel.nowPlayIndex] + ",%%end1996888888888%%"
                                                 }
 
 
@@ -386,205 +392,242 @@ fun MediaPlayer(
 
                 }
             }
-            //播放按钮
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxSize()
-            ) {
-                Canvas(Modifier.size(20.dp).pointerHoverIcon(PointerIcon.Hand).pointerInput(Unit) {
-                    detectTapGestures {
-                        //上一首
-                        rememberCoroutineScope.launch {
-                            val s = getByKey(FuncEnum.PLAY_LIST, "").split(":%%19969685426854***")
-                            val index = mediaPlayerViewModel.nowPlayIndex - 1
-                            mediaPlayerViewModel.nowPlayIndex = if (index < 0) {
-                                s.size - 1
-                            } else {
-                                index
+
+            var love by remember { mutableStateOf(false) }
+            val loveColor by animateColorAsState(if (love) musicControlColor else Color.Transparent)
+            Box(modifier = Modifier.fillMaxHeight(), contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier.fillMaxHeight().offset(x = -100.dp, y = -2.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .clickable(remember { MutableInteractionSource() },null) {
+                                love = !love
                             }
-                            musicFlow.value = s[mediaPlayerViewModel.nowPlayIndex] + ",%%end1996888888888%%"
-                        }
-                    }
-                }) {
-                    val roundedPolygon = RoundedPolygon(
-                        numVertices = 3,
-                        radius = size.minDimension / 2f,
-                        centerX = size.width / 2,
-                        centerY = size.height / 2,
-                        //每个三角形的角的内圆形弧度太大会导致
-                        rounding = CornerRounding(
-                            size.minDimension / 10,
-                            smoothing = 0.1f
-                        )
-                    )
-                    val roundedPolygonPath = roundedPolygon.toComposePath()
-                    rotate(180f) {
-                        drawPath(roundedPolygonPath, musicControlColor)
-                    }
-                    drawLine(
-                        musicControlColor,
-                        start = Offset(0f, 4f),
-                        end = Offset(0f, size.height - 4f),
-                        cap = StrokeCap.Round,
-                        strokeWidth = 2f
+                            .border(1.dp, color = musicControlColor, shape = GenericShape { size, _ ->
+                                val width = size.width
+                                val height = size.height
+
+                                moveTo(width / 2, height * 0.3f)
+                                cubicTo(width * 0.2f, 0f, 0f, height * 0.4f, width / 2, height)
+                                cubicTo(width, height * 0.4f, width * 0.8f, 0f, width / 2, height * 0.3f)
+                            })
+                            .clip(GenericShape { size, _ ->
+                                val width = size.width
+                                val height = size.height
+
+                                moveTo(width / 2, height * 0.3f)
+                                cubicTo(width * 0.2f, 0f, 0f, height * 0.4f, width / 2, height)
+                                cubicTo(width, height * 0.4f, width * 0.8f, 0f, width / 2, height * 0.3f)
+                            })
+                            .width(30.dp).height(20.dp).background(loveColor)
                     )
 
-                }
-                Box(modifier = Modifier.width(15.dp))
-                Box(modifier = Modifier
-                    .composed {
-                        if (mediaPlayerViewModel.showPaint) {
-                            Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
-                        } else {
-                            Modifier
-                        }
+
+                    {
+
                     }
-                    .size(41.dp)
-                    .drawWithCache {
-                        val path = Path()
-                        path.lineTo(0f, 50f)
-                        path.addOval(Rect(Offset.Zero, size))
-                        region.setPath(path.asSkiaPath(), Region().apply {
-                            setRect(IRect.makeLTRB(0, 0, size.width.roundToInt(), size.height.roundToInt()))
+                }
+                //播放按钮
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Canvas(Modifier.size(20.dp).pointerHoverIcon(PointerIcon.Hand).pointerInput(Unit) {
+                        detectTapGestures {
+                            //上一首
+                            rememberCoroutineScope.launch {
+                                val s = getByKey(FuncEnum.PLAY_LIST, "").split(":%%19969685426854***")
+                                val index = mediaPlayerViewModel.nowPlayIndex - 1
+                                mediaPlayerViewModel.nowPlayIndex = if (index < 0) {
+                                    s.size - 1
+                                } else {
+                                    index
+                                }
+                                musicFlow.value = s[mediaPlayerViewModel.nowPlayIndex] + ",%%end1996888888888%%"
+                            }
                         }
-                        )
+                    }) {
                         val roundedPolygon = RoundedPolygon(
                             numVertices = 3,
-                            radius = size.minDimension / 4.1f,
+                            radius = size.minDimension / 2f,
                             centerX = size.width / 2,
                             centerY = size.height / 2,
                             //每个三角形的角的内圆形弧度太大会导致
                             rounding = CornerRounding(
-                                size.minDimension / 30,
+                                size.minDimension / 10,
                                 smoothing = 0.1f
                             )
-
                         )
                         val roundedPolygonPath = roundedPolygon.toComposePath()
-                        onDrawBehind {
-
-                            drawIntoCanvas {
-                                paint.color = musicControlColor
-                                it.drawCircle(
-                                    Offset(size.width / 2, size.height / 2),
-                                    radius = size.minDimension / 2f,
-                                    paint = paint
-                                )
-                                if (mediaPlayerViewModel.isPause) {
-                                    paint.color = Color.White
-                                    it.drawPath(roundedPolygonPath, paint = paint)
-                                } else {
-                                    drawLine(
-                                        Color.White,
-                                        Offset(17.5.dp.toPx(), 13.5.dp.toPx()),
-                                        Offset(17.5.dp.toPx(), size.height - 13.5.dp.toPx()),
-                                        cap = StrokeCap.Round,
-                                        strokeWidth = 2.8.dp.toPx()
-                                    )
-                                    drawLine(
-                                        Color.White,
-                                        Offset(size.width - 17.5.dp.toPx(), 13.5.dp.toPx()),
-                                        Offset(size.width - 17.5.dp.toPx(), size.height - 13.5.dp.toPx()),
-                                        cap = StrokeCap.Round,
-                                        strokeWidth = 2.8.dp.toPx()
-                                    )
-                                }
-
-                            }
-
-
+                        rotate(180f) {
+                            drawPath(roundedPolygonPath, musicControlColor)
                         }
-
-
-                    }.pointerInput(Unit) {
-                        awaitPointerEventScope {
-                            while (true) {
-                                val event = awaitPointerEvent()
-                                val pointerInputChange = event.changes[0]
-                                pointerInputChange.consume()
-                                val contains = region.contains(
-                                    pointerInputChange.position.x.roundToInt(),
-                                    pointerInputChange.position.y.roundToInt()
-                                )
-                                mediaPlayerViewModel.showPaint = contains
-                                if (!contains) {
-                                    continue
-                                }
-                                if (event.type != PointerEventType.Press) {
-                                    continue
-                                }
-                                var b = true
-                                while (b) {
-                                    val e = awaitPointerEvent()
-                                    e.changes.forEach {
-                                        it.consume()
-                                    }
-                                    if (e.type == PointerEventType.Move) {
-                                        //判断是否超过范围
-                                        e.changes.forEach {
-
-                                            if (!region.contains(
-                                                    it.position.x.roundToInt(),
-                                                    it.position.y.roundToInt()
-                                                )
-                                            ) {
-                                                b = false
-                                                return@forEach
-                                            }
-                                        }
-                                    } else if (e.type == PointerEventType.Release) {
-                                        //执行回掉并退出
-                                        mediaPlayerViewModel.isPause = !mediaPlayerViewModel.isPause
-                                        b = false
-                                    }
-                                }
-                            }
-                        }
-                    }
-                )
-                Box(modifier = Modifier.width(15.dp))
-                Canvas(Modifier.size(20.dp).pointerHoverIcon(PointerIcon.Hand).pointerInput(Unit) {
-                    detectTapGestures {
-                        rememberCoroutineScope.launch {
-                            val s = getByKey(FuncEnum.PLAY_LIST, "").split(":%%19969685426854***")
-                            val index = mediaPlayerViewModel.nowPlayIndex + 1
-                            mediaPlayerViewModel.nowPlayIndex = if (index > s.size - 1) {
-                                0
-                            } else {
-                                index
-                            }
-                            musicFlow.value = s[mediaPlayerViewModel.nowPlayIndex] + ",%%end1996888888888%%"
-                        }
-                    }
-                }) {
-                    val roundedPolygon = RoundedPolygon(
-                        numVertices = 3,
-                        radius = size.minDimension / 2f,
-                        centerX = size.width / 2,
-                        centerY = size.height / 2,
-                        //每个三角形的角的内圆形弧度太大会导致
-                        rounding = CornerRounding(
-                            size.minDimension / 10,
-                            smoothing = 0.1f
+                        drawLine(
+                            musicControlColor,
+                            start = Offset(0f, 4f),
+                            end = Offset(0f, size.height - 4f),
+                            cap = StrokeCap.Round,
+                            strokeWidth = 2f
                         )
-                    )
-                    val roundedPolygonPath = roundedPolygon.toComposePath()
 
-                    drawPath(roundedPolygonPath, musicControlColor)
+                    }
+                    Box(modifier = Modifier.width(15.dp))
+                    Box(modifier = Modifier
+                        .composed {
+                            if (mediaPlayerViewModel.showPaint) {
+                                Modifier.pointerHoverIcon(icon = PointerIcon.Hand)
+                            } else {
+                                Modifier
+                            }
+                        }
+                        .size(41.dp)
+                        .drawWithCache {
+                            val path = Path()
+                            path.lineTo(0f, 50f)
+                            path.addOval(Rect(Offset.Zero, size))
+                            region.setPath(path.asSkiaPath(), Region().apply {
+                                setRect(IRect.makeLTRB(0, 0, size.width.roundToInt(), size.height.roundToInt()))
+                            }
+                            )
+                            val roundedPolygon = RoundedPolygon(
+                                numVertices = 3,
+                                radius = size.minDimension / 4.1f,
+                                centerX = size.width / 2,
+                                centerY = size.height / 2,
+                                //每个三角形的角的内圆形弧度太大会导致
+                                rounding = CornerRounding(
+                                    size.minDimension / 30,
+                                    smoothing = 0.1f
+                                )
 
-                    drawLine(
-                        musicControlColor,
-                        start = Offset(size.width, 4f),
-                        end = Offset(size.width, size.height - 4f),
-                        cap = StrokeCap.Round,
-                        strokeWidth = 2f
+                            )
+                            val roundedPolygonPath = roundedPolygon.toComposePath()
+                            onDrawBehind {
+
+                                drawIntoCanvas {
+                                    paint.color = musicControlColor
+                                    it.drawCircle(
+                                        Offset(size.width / 2, size.height / 2),
+                                        radius = size.minDimension / 2f,
+                                        paint = paint
+                                    )
+                                    if (mediaPlayerViewModel.isPause) {
+                                        paint.color = Color.White
+                                        it.drawPath(roundedPolygonPath, paint = paint)
+                                    } else {
+                                        drawLine(
+                                            Color.White,
+                                            Offset(17.5.dp.toPx(), 13.5.dp.toPx()),
+                                            Offset(17.5.dp.toPx(), size.height - 13.5.dp.toPx()),
+                                            cap = StrokeCap.Round,
+                                            strokeWidth = 2.8.dp.toPx()
+                                        )
+                                        drawLine(
+                                            Color.White,
+                                            Offset(size.width - 17.5.dp.toPx(), 13.5.dp.toPx()),
+                                            Offset(size.width - 17.5.dp.toPx(), size.height - 13.5.dp.toPx()),
+                                            cap = StrokeCap.Round,
+                                            strokeWidth = 2.8.dp.toPx()
+                                        )
+                                    }
+
+                                }
+
+
+                            }
+
+
+                        }.pointerInput(Unit) {
+                            awaitPointerEventScope {
+                                while (true) {
+                                    val event = awaitPointerEvent()
+                                    val pointerInputChange = event.changes[0]
+                                    pointerInputChange.consume()
+                                    val contains = region.contains(
+                                        pointerInputChange.position.x.roundToInt(),
+                                        pointerInputChange.position.y.roundToInt()
+                                    )
+                                    mediaPlayerViewModel.showPaint = contains
+                                    if (!contains) {
+                                        continue
+                                    }
+                                    if (event.type != PointerEventType.Press) {
+                                        continue
+                                    }
+                                    var b = true
+                                    while (b) {
+                                        val e = awaitPointerEvent()
+                                        e.changes.forEach {
+                                            it.consume()
+                                        }
+                                        if (e.type == PointerEventType.Move) {
+                                            //判断是否超过范围
+                                            e.changes.forEach {
+
+                                                if (!region.contains(
+                                                        it.position.x.roundToInt(),
+                                                        it.position.y.roundToInt()
+                                                    )
+                                                ) {
+                                                    b = false
+                                                    return@forEach
+                                                }
+                                            }
+                                        } else if (e.type == PointerEventType.Release) {
+                                            //执行回掉并退出
+                                            mediaPlayerViewModel.isPause = !mediaPlayerViewModel.isPause
+                                            b = false
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     )
+                    Box(modifier = Modifier.width(15.dp))
+                    Canvas(Modifier.size(20.dp).pointerHoverIcon(PointerIcon.Hand).pointerInput(Unit) {
+                        detectTapGestures {
+                            rememberCoroutineScope.launch {
+                                val s = getByKey(FuncEnum.PLAY_LIST, "").split(":%%19969685426854***")
+                                val index = mediaPlayerViewModel.nowPlayIndex + 1
+                                mediaPlayerViewModel.nowPlayIndex = if (index > s.size - 1) {
+                                    0
+                                } else {
+                                    index
+                                }
+                                musicFlow.value = s[mediaPlayerViewModel.nowPlayIndex] + ",%%end1996888888888%%"
+                            }
+                        }
+                    }) {
+                        val roundedPolygon = RoundedPolygon(
+                            numVertices = 3,
+                            radius = size.minDimension / 2f,
+                            centerX = size.width / 2,
+                            centerY = size.height / 2,
+                            //每个三角形的角的内圆形弧度太大会导致
+                            rounding = CornerRounding(
+                                size.minDimension / 10,
+                                smoothing = 0.1f
+                            )
+                        )
+                        val roundedPolygonPath = roundedPolygon.toComposePath()
+
+                        drawPath(roundedPolygonPath, musicControlColor)
+
+                        drawLine(
+                            musicControlColor,
+                            start = Offset(size.width, 4f),
+                            end = Offset(size.width, size.height - 4f),
+                            cap = StrokeCap.Round,
+                            strokeWidth = 2f
+                        )
+
+                    }
 
                 }
-
             }
-
             //循环按钮
             Row(
                 horizontalArrangement = Arrangement.End,

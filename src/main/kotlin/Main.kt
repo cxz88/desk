@@ -1,7 +1,9 @@
-
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.*
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.ColorPainter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.*
@@ -50,6 +52,7 @@ fun main() {
         } catch (_: Exception) {
 
         }
+
         val state = rememberWindowState(size = DpSize(1000.dp, 700.dp))
         remember {
             runBlocking {
@@ -69,18 +72,23 @@ fun main() {
             }
 
         }
-        Window(
-            onCloseRequest = ::exitApplication,
-            undecorated = true,
+
+        Window(onCloseRequest = ::exitApplication,
             state = state,
-            transparent = true,
             title = "",
+            decoration = WindowDecoration.Undecorated(),
+            transparent = true,
             resizable = false,
-        ) {
-            PreComposeApp {
-                App(state, ::exitApplication, lycContent, lycDeskShow)
-            }
-        }
+            content = {
+                Tray(
+                    icon = ColorPainter(Color.Transparent),
+                   tooltip = lycContent.collectAsState().value
+
+                )
+                PreComposeApp {
+                    App(state, ::exitApplication, lycContent, lycDeskShow)
+                }
+            })
 
         val windowState = rememberWindowState(size = DpSize(1000.dp, 100.dp))
         remember {
@@ -101,21 +109,18 @@ fun main() {
             }
         }
         if (ldShow) {
-            Window(
+            Window(onCloseRequest = ::exitApplication,
                 state = windowState,
-                onCloseRequest = ::exitApplication,
                 title = "",
+                decoration = WindowDecoration.Undecorated(),
                 transparent = true,
-                undecorated = true,
                 resizable = false,
                 alwaysOnTop = true,
-            ) {
-
-                CompositionLocalProvider(globalStyle provides GlobalStyle) {
-                    deskLyc(lycContent, lycDeskShow, windowState)
-                }
-
-            }
+                content = {
+                    CompositionLocalProvider(globalStyle provides GlobalStyle) {
+                        deskLyc(lycContent, lycDeskShow, windowState)
+                    }
+                })
         }
     }
 

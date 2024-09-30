@@ -83,7 +83,7 @@ fun FrameWindowScope.LeftBar(
                 }
             }
         }
-        Box(modifier = Modifier.width(40.dp))
+//        Box(modifier = Modifier.width(40.dp))
         content()
 
 

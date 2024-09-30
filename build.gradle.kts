@@ -6,7 +6,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
     id("org.openjfx.javafxplugin") version "0.0.13"
     id("app.cash.sqldelight") version "2.0.2"
-    kotlin("plugin.serialization") version "2.0.0"
+    kotlin("plugin.serialization") version "2.0.20"
 }
 
 group = "com.chenxinzhi"
@@ -17,7 +17,6 @@ repositories {
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     google()
 }
-
 
 
 dependencies {
@@ -40,12 +39,12 @@ dependencies {
     // Provides the core functions of Sketch as well as singletons and extension
 // functions that rely on singleton implementations
     implementation("io.github.panpf.sketch4:sketch-compose:4.0.0-alpha08")
-    implementation("org.openjfx:javafx-base:17.0.12:${fxSuffix}")
-    implementation("org.openjfx:javafx-graphics:17.0.12:${fxSuffix}")
-    implementation("org.openjfx:javafx-controls:17.0.12:${fxSuffix}")
-    implementation("org.openjfx:javafx-swing:17.0.12:${fxSuffix}")
-    implementation("org.openjfx:javafx-web:17.0.12:${fxSuffix}")
-    implementation("org.openjfx:javafx-media:17.0.12:${fxSuffix}")
+    implementation("org.openjfx:javafx-base:21.0.4:${fxSuffix}")
+    implementation("org.openjfx:javafx-graphics:21.0.4:${fxSuffix}")
+    implementation("org.openjfx:javafx-controls:21.0.4:${fxSuffix}")
+    implementation("org.openjfx:javafx-swing:21.0.4:${fxSuffix}")
+    implementation("org.openjfx:javafx-web:21.0.4:${fxSuffix}")
+    implementation("org.openjfx:javafx-media:21.0.4:${fxSuffix}")
     runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.9.0-RC.2")
     implementation(compose.desktop.currentOs)
     api("moe.tlaster:precompose:1.6.2")
@@ -55,20 +54,18 @@ dependencies {
     implementation("io.ktor:ktor-client-cio:$ktor_version")
     implementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
+    // Enables FileKit without Compose dependencies
+    implementation("io.github.vinceglb:filekit-core:0.8.2")
+
+    // Enables FileKit with Composable utilities
+    implementation("io.github.vinceglb:filekit-compose:0.8.2")
 
 
 }
 compose.desktop {
     application {
         mainClass = "MainKt"
-        buildTypes.release{
-            proguard {
-                obfuscate.set(false)
-                joinOutputJars.set(true)
-                configurationFiles.from(project.files("compose-desktop.pro"))
 
-            }
-        }
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Exe)
             packageName = "deskApp"
@@ -77,10 +74,9 @@ compose.desktop {
                 shortcut = true
             }
             modules("java.sql")
-
+            modules("jdk.security.auth")
         }
     }
-
 
 }
 

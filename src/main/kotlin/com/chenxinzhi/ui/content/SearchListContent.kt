@@ -43,6 +43,10 @@ fun SearchListContent(search: String, musicId: MutableStateFlow<String>) {
             //显示加载动画,进行网络数据加载
             var count = 0
             val c = count++
+            if (searchStr.isBlank()) {
+                loading = false
+                return@LaunchedEffect
+            }
             val s = Api.page(searchStr, c)
             var l = s?.abslist ?: listOf()
             var countW = 0

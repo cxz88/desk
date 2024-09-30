@@ -48,6 +48,7 @@ import com.chenxinzhi.sqlservice.FuncEnum
 import com.chenxinzhi.sqlservice.getByKey
 import com.chenxinzhi.sqlservice.updateByKey
 import com.chenxinzhi.ui.style.globalStyle
+import com.chenxinzhi.utils.AXin
 import com.chenxinzhi.utils.antialias
 import com.chenxinzhi.utils.toComposePath
 import com.chenxinzhi.viewmodel.media.MediaPlayerViewModel
@@ -140,6 +141,9 @@ fun MediaPlayer(
 //                        }
                         PlatformImpl.startup(
                             {
+                                mediaPlayerViewModel.mediaPlayerState?.stop()
+                                mediaPlayerViewModel.mediaPlayerState?.dispose()
+                                mediaPlayerViewModel.mediaPlayerState = null
                                 val media = javafx.scene.media.Media(url)
                                 mediaPlayerViewModel.mediaPlayerState = javafx.scene.media.MediaPlayer(media).apply {
                                     volume = mediaPlayerViewModel.volume.toDouble()
@@ -402,25 +406,11 @@ fun MediaPlayer(
                 ) {
                     Box(
                         modifier = Modifier
-                            .clickable(remember { MutableInteractionSource() },null) {
+                            .clickable(remember { MutableInteractionSource() }, null) {
                                 love = !love
                             }
-                            .border(1.dp, color = musicControlColor, shape = GenericShape { size, _ ->
-                                val width = size.width
-                                val height = size.height
-
-                                moveTo(width / 2, height * 0.3f)
-                                cubicTo(width * 0.2f, 0f, 0f, height * 0.4f, width / 2, height)
-                                cubicTo(width, height * 0.4f, width * 0.8f, 0f, width / 2, height * 0.3f)
-                            })
-                            .clip(GenericShape { size, _ ->
-                                val width = size.width
-                                val height = size.height
-
-                                moveTo(width / 2, height * 0.3f)
-                                cubicTo(width * 0.2f, 0f, 0f, height * 0.4f, width / 2, height)
-                                cubicTo(width, height * 0.4f, width * 0.8f, 0f, width / 2, height * 0.3f)
-                            })
+                            .border(1.dp, color = musicControlColor, shape = AXin)
+                            .clip(AXin)
                             .width(30.dp).height(20.dp).background(loveColor)
                     )
 

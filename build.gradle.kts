@@ -54,6 +54,11 @@ dependencies {
     implementation("io.ktor:ktor-client-cio:$ktor_version")
     implementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
+    // Enables FileKit without Compose dependencies
+    implementation("io.github.vinceglb:filekit-core:0.8.2")
+
+    // Enables FileKit with Composable utilities
+    implementation("io.github.vinceglb:filekit-compose:0.8.2")
 
 
 }
@@ -69,6 +74,7 @@ compose.desktop {
                 shortcut = true
             }
             modules("java.sql")
+            modules("jdk.security.auth")
         }
     }
 

@@ -67,6 +67,7 @@ compose.desktop {
         mainClass = "MainKt"
         buildTypes.release {
             proguard {
+                isEnabled=true
                 configurationFiles.from("compose-desktop.pro")
             }
         }

@@ -32,6 +32,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
  */
 @Composable
 fun SearchListContent(search: String, musicId: MutableStateFlow<String>) {
+
     val searchStr = search.split(",")[0]
     var loading by remember(searchStr) { mutableStateOf(true) }
     val scrollState = remember(searchStr) {

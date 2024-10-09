@@ -1,6 +1,7 @@
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.*
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.unit.DpSize
@@ -28,6 +29,7 @@ import java.awt.*
 val sqlDriver: SqlDriver = JdbcSqliteDriver("jdbc:sqlite:${System.getProperty("user.home")}/test.db")
 
 
+@OptIn(ExperimentalComposeUiApi::class)
 fun main() {
     Thread.setDefaultUncaughtExceptionHandler { _, e ->
         Dialog(Frame(), e.message ?: "错误").apply {

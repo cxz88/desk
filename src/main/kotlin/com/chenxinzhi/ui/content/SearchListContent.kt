@@ -23,7 +23,9 @@ import com.chenxinzhi.api.Api
 import com.chenxinzhi.model.search.Abslist
 import com.chenxinzhi.ui.Loading
 import com.chenxinzhi.ui.style.globalStyle
+import com.chenxinzhi.viewmodel.SearchListViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import moe.tlaster.precompose.viewmodel.viewModel
 
 /**
  * @description
@@ -31,51 +33,17 @@ import kotlinx.coroutines.flow.MutableStateFlow
  * @date 2024/9/21
  */
 @Composable
-fun SearchListContent(search: String, musicId: MutableStateFlow<String>) {
-
-    val searchStr = search.split(",")[0]
-    var loading by remember(searchStr) { mutableStateOf(true) }
-    val scrollState = remember(searchStr) {
-        LazyListState()
+fun SearchListContent(
+    search: String, musicId: MutableStateFlow<String>, searchListViewModel: SearchListViewModel = viewModel {
+        SearchListViewModel
     }
-    val loadedList = remember(search) { mutableStateListOf<Abslist>() }
+) {
+    val searchStr = search.split(",")[0]
     Box(modifier = Modifier.fillMaxSize().padding(bottom = 62.dp), contentAlignment = Alignment.Center) {
-        LaunchedEffect(search) {
-            //显示加载动画,进行网络数据加载
-            var count = 0
-            val c = count++
-            if (searchStr.isBlank()) {
-                loading = false
-                return@LaunchedEffect
-            }
-            val s = Api.page(searchStr, c)
-            var l = s?.abslist ?: listOf()
-            var countW = 0
-            while (l.isEmpty() && countW < 30) {
-                val s2 = Api.page(searchStr, c)
-                l = s2?.abslist ?: listOf()
-                countW++
-            }
-            loadedList += l
-            loading = false
-            s?.let {
-                while (it.tOTAL.toInt() > loadedList.size) {
-                    val pn = count++
-                    val s1 = Api.page(searchStr, pn)
-                    var abslists: List<Abslist> = s1?.abslist ?: listOf()
-                    var countb = 0
-                    while (abslists.isEmpty() && countb < 30) {
-                        val s4 = Api.page(searchStr, pn)
-                        abslists = s4?.abslist ?: listOf()
-                        countb++
-                    }
-                    loadedList += abslists
-
-                }
-            }
-
+        LaunchedEffect(searchStr) {
+            searchListViewModel.loadContentList(searchStr)
         }
-        AnimatedContent(loading) {
+        AnimatedContent(searchListViewModel.loading) {
             if (it) {
                 Loading()
             } else {
@@ -108,11 +76,11 @@ fun SearchListContent(search: String, musicId: MutableStateFlow<String>) {
                         modifier = Modifier.fillMaxSize()
                     ) {
                         LazyColumn(
-                            state = scrollState, modifier = Modifier.fillMaxSize()
+                            state = searchListViewModel.lazyListState, modifier = Modifier.fillMaxSize()
                         ) {
 
-                            items(loadedList.size) { index ->
-                                loadedList[index].let { abs ->
+                            items(searchListViewModel.listContent.size) { index ->
+                                searchListViewModel.listContent[index].let { abs ->
                                     val s = remember { MutableInteractionSource() }
                                     val h by s.collectIsHoveredAsState()
                                     Box(
@@ -182,7 +150,7 @@ fun SearchListContent(search: String, musicId: MutableStateFlow<String>) {
                         }
                         VerticalScrollbar(
                             modifier = Modifier.align(Alignment.CenterEnd),
-                            adapter = rememberScrollbarAdapter(scrollState),
+                            adapter = rememberScrollbarAdapter(searchListViewModel.lazyListState),
                             style = ScrollbarStyle(
                                 minimalHeight = 16.dp,
                                 thickness = 8.dp,

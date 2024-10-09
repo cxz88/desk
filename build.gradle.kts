@@ -65,7 +65,11 @@ dependencies {
 compose.desktop {
     application {
         mainClass = "MainKt"
-
+        buildTypes.release {
+            proguard {
+                configurationFiles.from("compose-desktop.pro")
+            }
+        }
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Exe)
             packageName = "deskApp"
@@ -76,6 +80,7 @@ compose.desktop {
             modules("java.sql")
             modules("jdk.security.auth")
         }
+
     }
 
 }

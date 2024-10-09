@@ -1,38 +1,23 @@
 package com.chenxinzhi.ui.content
 
 import androidx.compose.foundation.*
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.chenxinzhi.route.ContentRoute
 import com.chenxinzhi.ui.style.GlobalStyle
 import com.chenxinzhi.ui.style.globalStyle
-import io.github.vinceglb.filekit.compose.rememberFilePickerLauncher
-import io.github.vinceglb.filekit.core.FileKitPlatformSettings
-import io.github.vinceglb.filekit.core.PickerMode
-import io.github.vinceglb.filekit.core.PickerType
-import kotlinx.coroutines.delay
+import moe.tlaster.precompose.navigation.Navigator
 
 @Composable
-fun LeftContent() {
+fun LeftContent(navigator: Navigator) {
     Box(
         modifier = Modifier
             .width(200.dp).fillMaxHeight().background(GlobalStyle.rightColor)
@@ -46,6 +31,18 @@ fun LeftContent() {
             Box {
                 val scrollState = rememberLazyListState()
                 var checkItem by remember { mutableStateOf(0) }
+                when (checkItem) {
+                    0 -> {
+                        navigator.navigate(ContentRoute.search)
+                    }
+                    1 -> {
+                        navigator.navigate(ContentRoute.love)
+                    }
+                    2 -> {
+                        navigator.navigate(ContentRoute.download)
+                    }
+                    else -> {}
+                }
                 LazyColumn(state = scrollState) {
                     itemsIndexed(listItem) { index, item ->
                         Row(
@@ -73,14 +70,7 @@ fun LeftContent() {
 
             }
             // Pick files from Compose
-            val launcher = rememberFilePickerLauncher(mode = PickerMode.Multiple()) { files ->
-                // Handle picked files
-            }
 
-// Use the pickerLauncher
-            Button(onClick = { launcher.launch() }) {
-                Text("Pick files")
-            }
 
         }
     }

@@ -32,6 +32,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
  */
 @Composable
 fun SearchListContent(search: String, musicId: MutableStateFlow<String>) {
+
     val searchStr = search.split(",")[0]
     var loading by remember(searchStr) { mutableStateOf(true) }
     val scrollState = remember(searchStr) {
@@ -43,6 +44,10 @@ fun SearchListContent(search: String, musicId: MutableStateFlow<String>) {
             //显示加载动画,进行网络数据加载
             var count = 0
             val c = count++
+            if (searchStr.isBlank()) {
+                loading = false
+                return@LaunchedEffect
+            }
             val s = Api.page(searchStr, c)
             var l = s?.abslist ?: listOf()
             var countW = 0

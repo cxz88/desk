@@ -1,7 +1,6 @@
 -keep class org.sqlite.** { *; }
--dontwarn kotlinx.datetime.**
--dontwarn org.slf4j.**
--keep class org.slf4j.**{ *; }
--keep class com.sun.jna.* { *; }
--keep class * implements com.sun.jna.* { *; }
-
+-ignorewarnings
+-keep class kotlinx.coroutines.** {*;}
+-keep class io.ktor.** {*;}
+-keep class com.sun.** {*;}
+-keep class com.chenxinzhi.model.** {*;}

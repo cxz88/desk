@@ -50,8 +50,8 @@ fun FrameWindowScope.Content(
 ) {
     val current = LocalFocusManager.current
     Box(
-        modifier = Modifier.clip(shape = RoundedCornerShape(10.dp))
-            .border(.01.dp, color = Color(0x33ffffff), RoundedCornerShape(10.dp)).background(
+        modifier = Modifier.border(.01.dp, color = Color(0x33ffffff), RoundedCornerShape(10.dp)).clip(shape = RoundedCornerShape(12.dp))
+            .background(
                 color = GlobalStyle.backgroundColor
             ).fillMaxWidth().pointerInput(Unit) {
                 awaitPointerEventScope {

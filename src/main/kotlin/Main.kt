@@ -1,9 +1,9 @@
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.*
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.*
@@ -23,11 +23,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import moe.tlaster.precompose.PreComposeApp
+import moe.tlaster.precompose.navigation.rememberNavigator
 import java.awt.*
 
 val sqlDriver: SqlDriver = JdbcSqliteDriver("jdbc:sqlite:${System.getProperty("user.home")}/test.db")
 
 
+@OptIn(ExperimentalComposeUiApi::class)
 fun main() {
     Thread.setDefaultUncaughtExceptionHandler { _, e ->
         Dialog(Frame(), e.message ?: "错误").apply {
@@ -138,10 +140,11 @@ private fun FrameWindowScope.App(
         MaterialTheme {
             val searchKey = remember { MutableStateFlow("") }
             val closeFlow = remember { MutableStateFlow(false) }
+            val navigator = rememberNavigator()
             Content(state = state, { closeApp() }, lycContent, lycDeskShow, searchKey, closeFlow) {
                 Row {
-                    LeftContent()
-                    RightContent(searchKey, it)
+                    LeftContent(navigator)
+                    RightContent(searchKey, it,navigator)
                 }
             }
 
